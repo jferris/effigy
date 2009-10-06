@@ -8,11 +8,11 @@ module Effigy
     end
 
     def css(selector, assignments)
-      @css_assignments[selector] = assignments
+      @css_assignments[selector] = normalize_assignments(assignments)
     end
 
     def xpath(selector, assignments)
-      @xpath_assignments[selector] = assignments
+      @xpath_assignments[selector] = normalize_assignments(assignments)
     end
 
     def render(template)
@@ -35,6 +35,14 @@ module Effigy
         assignments.each do |attribute, value|
           element[attribute.to_s] = value
         end
+      end
+    end
+
+    def normalize_assignments(assignments)
+      if assignments.respond_to?(:to_hash)
+        assignments.to_hash
+      else
+        { :contents => assignments }
       end
     end
   end

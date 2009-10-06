@@ -13,7 +13,17 @@ module Effigy
       xml.should have_selector(:element, :contents => 'expected', :one => '123', :two => '234')
     end
 
-    it "should replace just element contents using a css selector" do
+    it "should replace just element contents using a css selector with a string parameter" do
+      template = %{<test><element one="abc">something</element></test>}
+
+      view = Effigy::View.new
+      view.css 'element', 'expected'
+      xml = view.render(template)
+
+      xml.should have_selector(:element, :contents => 'expected', :one => 'abc')
+    end
+
+    it "should replace just element contents using a css selector with a hash parameter" do
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
