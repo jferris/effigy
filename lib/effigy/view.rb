@@ -32,7 +32,8 @@ module Effigy
 
     def render(template)
       @current_context = Nokogiri::XML.parse(template)
-      yield
+      yield if block_given?
+      apply
       current_context.to_s
     end
 
@@ -53,6 +54,9 @@ module Effigy
       else
         current_context.at(nodes)
       end
+    end
+
+    def apply
     end
 
   end

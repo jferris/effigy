@@ -54,4 +54,25 @@ module Effigy
       xml.should have_selector('element value', :contents => 'expected')
     end
   end
+
+  describe View, "subclass" do
+    before do
+      @subclass = Class.new(View)
+      @subclass.class_eval do
+        def initialize(value)
+          @value = value
+        end
+
+        def apply
+          text('element', @value)
+        end
+      end
+    end
+
+    it "should run #apply when rendering" do
+      template = %{<test><element>original</element></test>}
+      view = @subclass.new('expected')
+      view.render(template).should have_selector('element', :contents => 'expected')
+    end
+  end
 end

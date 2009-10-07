@@ -51,3 +51,25 @@ document = view.render(template)
 #     </div>
 #   </body>
 # </html>
+
+class PostView < Effigy::View
+  attr_reader :post
+
+  def initialize(post)
+    @post = post
+  end
+
+  def apply
+    text('h1', post.title)
+    text('title').text("#{post.title} - Site title")
+    text('p.body').text(post.body)
+    examples_for('.comment', post.comments) do |comment|
+      text('h2', comment.title)
+      text('p', comment.summary)
+      attributes('a', :href => url_for(comment))
+    end
+  end
+end
+
+view = PostView.new(post)
+document = view.render(template)
