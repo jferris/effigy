@@ -20,8 +20,8 @@ post = Post.first
 view = Effigy::View.new
 view.render(template) do
   view.text('h1', post.title)
-  view.text('title').text("#{post.title} - Site title")
-  view.text('p.body').text(post.body)
+  view.text('title', "#{post.title} - Site title")
+  view.text('p.body', post.body)
   view.examples_for('.comment', post.comments) do |comment|
     view.text('h2', comment.title)
     view.text('p', comment.summary)
@@ -61,8 +61,8 @@ class PostView < Effigy::View
 
   def apply
     text('h1', post.title)
-    text('title').text("#{post.title} - Site title")
-    text('p.body').text(post.body)
+    text('title', "#{post.title} - Site title")
+    text('p.body', post.body)
     examples_for('.comment', post.comments) do |comment|
       text('h2', comment.title)
       text('p', comment.summary)
