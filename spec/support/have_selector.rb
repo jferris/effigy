@@ -54,7 +54,7 @@ module Matchers
     end
 
     def elements
-      @elements ||= document.css(selector)
+      @elements ||= document.css(selector.to_s)
     end
 
     def document

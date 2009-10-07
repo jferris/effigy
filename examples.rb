@@ -1,31 +1,33 @@
-template = <<-XML
-<?xml version="1.0"?>
-<post>
-  <title>a title</title>
-  <user>
-    <name>Joe</name>
-    <email>joe@example.com</email>
-  </user>
-</post>
-XML
+template = <<-HTML
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+    <h1></h1>
+    <p class="body"></p>
+  </body>
+</html>
+HTML
+
+post = Post.first
 
 view = Effigy::View.new
+view.render(template) do
+  view.text('h1', post.title)
+  view.text('title').text("#{post.title} - Site title")
+  view.text('p.body').text(post.body)
+end
 
-# set the contents of the /post/title element
-view.css 'post title', 'new title'
-
-# set the id attribute of the /post element
-view.xpath '//post', :id => '5'
-
-# set the contents and attributes of the /post/user/name element
-view.xpath '//name', :contents => 'Bill', :full => 'false'
+document = view.render(template)
 
 # Result document:
-# <?xml version="1.0"?>
-# <post id="5">
-#   <title>new title</title>
-#   <user>
-#     <name full="false">Bill</name>
-#     <email>joe@example.com</email>
-#   </user>
-# </post>
+# <html>
+#   <head>
+#     <title>Post title - Site title</title>
+#   </head>
+#   <body>
+#     <h1>Post title</h1>
+#     <p class="body">Post body</p>
+#   </body>
+# </html>

@@ -3,74 +3,26 @@ require 'effigy/view'
 
 module Effigy
   describe View do
-    it "should replace element contents and attributes using a css selector" do
+    it "should replace element contents" do
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
-      view.css 'element', :contents => 'expected', :one => '123', :two => '234'
-      xml = view.render(template)
-
-      xml.should have_selector(:element, :contents => 'expected', :one => '123', :two => '234')
-    end
-
-    it "should replace just element contents using a css selector with a string parameter" do
-      template = %{<test><element one="abc">something</element></test>}
-
-      view = Effigy::View.new
-      view.css 'element', 'expected'
-      xml = view.render(template)
+      xml = view.render(template) do
+        view.text 'element', 'expected'
+      end
 
       xml.should have_selector(:element, :contents => 'expected', :one => 'abc')
     end
 
-    it "should replace just element contents using a css selector with a hash parameter" do
+    it "should replace element attributes" do
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
-      view.css 'element', :contents => 'expected'
-      xml = view.render(template)
+      xml = view.render(template) do
+        view.attributes 'element', :one => '123', :two => '234'
+      end
 
-      xml.should have_selector(:element, :contents => 'expected', :one => 'abc')
-    end
-
-    it "should replace just element attributes using a css selector" do
-      template = %{<test><element one="abc">something</element></test>}
-
-      view = Effigy::View.new
-      view.css 'element', :one => 'expected'
-      xml = view.render(template)
-
-      xml.should have_selector(:element, :contents => 'something', :one => 'expected')
-    end
-
-    it "should replace element contents and attributes using xpath" do
-      template = %{<test><element one="abc">something</element></test>}
-
-      view = Effigy::View.new
-      view.xpath '//element[@one="abc"]', :contents => 'expected', :one => '123', :two => '234'
-      xml = view.render(template)
-
-      xml.should have_selector(:element, :contents => 'expected', :one => '123', :two => '234')
-    end
-
-    it "should replace just element contents using xpath" do
-      template = %{<test><element one="abc">something</element></test>}
-
-      view = Effigy::View.new
-      view.xpath '//element[@one="abc"]', :contents => 'expected'
-      xml = view.render(template)
-
-      xml.should have_selector(:element, :contents => 'expected', :one => 'abc')
-    end
-
-    it "should replace just element attributes using xpath" do
-      template = %{<test><element one="abc">something</element></test>}
-
-      view = Effigy::View.new
-      view.xpath '//element[@one="abc"]', :one => 'expected'
-      xml = view.render(template)
-
-      xml.should have_selector(:element, :contents => 'something', :one => 'expected')
+      xml.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
     end
   end
 end
