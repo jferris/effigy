@@ -24,5 +24,34 @@ module Effigy
 
       xml.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
     end
+
+    it "should replace examples" do
+      template = %{<test><element><value>original</value></element></test>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.examples_for('element', %w(one two)) do |value|
+          view.text('value', value)
+        end
+      end
+
+      xml.should have_selector('element value', :contents => 'one')
+      xml.should have_selector('element value', :contents => 'two')
+      xml.should_not have_selector('element value', :contents => 'original')
+      xml.should =~ /one.*two/m
+    end
+
+    it "should replace within a context" do
+      template = %{<test><element><value>original</value></element></test>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.context('element') do
+          view.text('value', 'expected')
+        end
+      end
+
+      xml.should have_selector('element value', :contents => 'expected')
+    end
   end
 end

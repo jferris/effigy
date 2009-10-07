@@ -19,7 +19,7 @@ module Matchers
     end
 
     def negative_failure_message
-      "Did not expect #{@missing}"
+      "Did not expect #{selector}"
     end
 
     private

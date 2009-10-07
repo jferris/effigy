@@ -8,28 +8,52 @@ module Effigy
     end
 
     def text(selector, content)
-      contenxt.search(selector).each do |element|
-        element.content = content
-      end
+      select(selector).content = content
     end
 
     def attributes(selector, attributes)
-      contenxt.search(selector).each do |element|
-        attributes.each do |attribute, value|
-          element[attribute.to_s] = value
-        end
+      element = select(selector)
+      attributes.each do |attribute, value|
+        element[attribute.to_s] = value
       end
     end
 
+    def examples_for(selector, collection, &block)
+      original_element = current_context.at(selector)
+      sibling = original_element
+      collection.each do |item|
+        item_element = original_element.dup
+        context(item_element) { yield(item) }
+        sibling.add_next_sibling(item_element)
+        sibling = item_element
+      end
+      original_element.unlink
+    end
+
     def render(template)
-      @contenxt = Nokogiri::XML.parse(template)
+      @current_context = Nokogiri::XML.parse(template)
       yield
-      contenxt.to_s
+      current_context.to_s
+    end
+
+    def context(new_context)
+      old_context = @current_context
+      @current_context = select(new_context)
+      yield
+      @current_context = old_context
     end
 
     private
 
-    attr_reader :contenxt
+    attr_reader :current_context
+
+    def select(nodes)
+      if nodes.respond_to?(:search)
+        nodes
+      else
+        current_context.at(nodes)
+      end
+    end
 
   end
 end
