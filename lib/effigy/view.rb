@@ -18,7 +18,7 @@ module Effigy
       end
     end
 
-    def examples_for(selector, collection, &block)
+    def replace_with_each(selector, collection, &block)
       original_element = current_context.at(selector)
       collection.inject(original_element) do |sibling, item|
         item_element = clone_element_with_item(original_element, item, &block)
@@ -30,7 +30,7 @@ module Effigy
     def render(template)
       @current_context = Nokogiri::XML.parse(template)
       yield if block_given?
-      apply
+      transform
       current_context.to_s
     end
 
@@ -53,7 +53,7 @@ module Effigy
       end
     end
 
-    def apply
+    def transform
     end
 
     def clone_element_with_item(original_element, item, &block)

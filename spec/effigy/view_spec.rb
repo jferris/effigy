@@ -25,12 +25,12 @@ module Effigy
       xml.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
     end
 
-    it "should replace examples" do
+    it "should replace an element with a clone for each item in a collection" do
       template = %{<test><element><value>original</value></element></test>}
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.examples_for('element', %w(one two)) do |value|
+        view.replace_with_each('element', %w(one two)) do |value|
           view.text('value', value)
         end
       end
@@ -63,13 +63,13 @@ module Effigy
           @value = value
         end
 
-        def apply
+        def transform
           text('element', @value)
         end
       end
     end
 
-    it "should run #apply when rendering" do
+    it "should run #transform when rendering" do
       template = %{<test><element>original</element></test>}
       view = @subclass.new('expected')
       view.render(template).should have_selector('element', :contents => 'expected')

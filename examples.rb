@@ -22,7 +22,7 @@ view.render(template) do
   view.text('h1', post.title)
   view.text('title', "#{post.title} - Site title")
   view.text('p.body', post.body)
-  view.examples_for('.comment', post.comments) do |comment|
+  view.replace_with_each('.comment', post.comments) do |comment|
     view.text('h2', comment.title)
     view.text('p', comment.summary)
     view.attributes('a', :href => url_for(comment))
@@ -59,11 +59,11 @@ class PostView < Effigy::View
     @post = post
   end
 
-  def apply
+  def transform
     text('h1', post.title)
     text('title', "#{post.title} - Site title")
     text('p.body', post.body)
-    examples_for('.comment', post.comments) do |comment|
+    replace_with_each('.comment', post.comments) do |comment|
       text('h2', comment.title)
       text('p', comment.summary)
       attributes('a', :href => url_for(comment))
