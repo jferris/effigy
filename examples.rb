@@ -11,6 +11,7 @@ template = <<-HTML
       <p></p>
       <a>View more</a>
     </div>
+    <p id="no-comments">There aren't any comments for this post.</p>
   </body>
 </html>
 HTML
@@ -27,6 +28,7 @@ view.render(template) do
     view.text('p', comment.summary)
     view.attributes('a', :href => url_for(comment))
   end
+  view.remove('#no-comments') if post.comments.empty?
 end
 
 document = view.render(template)
@@ -68,6 +70,7 @@ class PostView < Effigy::View
       text('p', comment.summary)
       attributes('a', :href => url_for(comment))
     end
+    remove('#no-comments') if post.comments.empty?
   end
 end
 

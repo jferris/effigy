@@ -41,7 +41,14 @@ module Effigy
       @current_context = old_context
     end
 
+    def remove(selector)
+      select_all(selector).each { |element| element.unlink }
+    end
+
     private
+
+    def transform
+    end
 
     attr_reader :current_context
 
@@ -53,7 +60,8 @@ module Effigy
       end
     end
 
-    def transform
+    def select_all(selector)
+      current_context.search(selector)
     end
 
     def clone_element_with_item(original_element, item, &block)

@@ -53,6 +53,18 @@ module Effigy
 
       xml.should have_selector('element value', :contents => 'expected')
     end
+
+    it "should remove all matching elements" do
+      template = %{<test><first class="yes"/><other class="yes"/><last class="no"/></test>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.remove('.yes')
+      end
+
+      xml.should have_selector('.no')
+      xml.should_not have_selector('.yes')
+    end
   end
 
   describe View, "subclass" do
