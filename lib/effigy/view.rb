@@ -20,12 +20,9 @@ module Effigy
 
     def examples_for(selector, collection, &block)
       original_element = current_context.at(selector)
-      sibling = original_element
-      collection.each do |item|
-        item_element = original_element.dup
-        context(item_element) { yield(item) }
+      collection.inject(original_element) do |sibling, item|
+        item_element = clone_element_with_item(original_element, item, &block)
         sibling.add_next_sibling(item_element)
-        sibling = item_element
       end
       original_element.unlink
     end
@@ -57,6 +54,12 @@ module Effigy
     end
 
     def apply
+    end
+
+    def clone_element_with_item(original_element, item, &block)
+      item_element = original_element.dup
+      context(item_element) { yield(item) }
+      item_element
     end
 
   end
