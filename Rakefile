@@ -4,8 +4,8 @@ require 'rake/gempackagetask'
 
 require 'spec/rake/spectask'
 
-desc 'Default: run the specs.'
-task :default => [:spec]
+desc 'Default: run the specs and metrics.'
+task :default => [:spec, :metrics]
 
 Spec::Rake::SpecTask.new do |t|
   t.spec_opts = ['--color', '--format', 'progress']
@@ -35,3 +35,19 @@ rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
 
+begin
+  require 'reek/adapters/rake_task'
+
+  namespace :metrics do
+    desc "Run reek"
+    Reek::RakeTask.new do |t|
+      t.fail_on_error = false
+    end
+  end
+
+  desc "Run all metrics"
+  task :metrics => ['metrics:reek']
+rescue LoadError => e
+  puts e.inspect
+  puts "Missing dependencies for metrics."
+end
