@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'effigy/view'
+require 'effigy/errors'
 
 module Effigy
   describe View do
@@ -64,6 +65,39 @@ module Effigy
 
       xml.should have_selector('.no')
       xml.should_not have_selector('.yes')
+    end
+
+    describe "given a template without .find" do
+      def render(&block)
+        lambda do
+          view = Effigy::View.new
+          view.render('<test/>') { block.call(view) }
+        end
+      end
+
+      it "should raise when updating text content for .find" do
+        render { |view| view.text('.find', 'value') }.should raise_error(Effigy::ElementNotFound)
+      end
+
+      it "should raise when updating attributes for .find" do
+        render { |view| view.attributes('.find', :attr => 'value') }.
+          should raise_error(Effigy::ElementNotFound)
+      end
+
+      it "should raise when replacing an element matching .find" do
+        render { |view| view.replace_with_each('.find', []) }.
+          should raise_error(Effigy::ElementNotFound)
+      end
+
+      it "should raise when removing elements matching .find" do
+        render { |view| view.remove('.find') }.
+          should raise_error(Effigy::ElementNotFound)
+      end
+
+      it "should raise when setting the context to .find" do
+        render { |view| view.context('.find') }.
+          should raise_error(Effigy::ElementNotFound)
+      end
     end
   end
 

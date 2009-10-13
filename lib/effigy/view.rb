@@ -19,7 +19,7 @@ module Effigy
     end
 
     def replace_with_each(selector, collection, &block)
-      original_element = current_context.at(selector)
+      original_element = select(selector)
       collection.inject(original_element) do |sibling, item|
         item_element = clone_element_with_item(original_element, item, &block)
         sibling.add_next_sibling(item_element)
@@ -56,12 +56,15 @@ module Effigy
       if nodes.respond_to?(:search)
         nodes
       else
-        current_context.at(nodes)
+        current_context.at(nodes) or
+          raise ElementNotFound, nodes
       end
     end
 
     def select_all(selector)
-      current_context.search(selector)
+      result = current_context.search(selector)
+      raise ElementNotFound, selector if result.empty?
+      result
     end
 
     def clone_element_with_item(original_element, item, &block)
