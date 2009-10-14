@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'effigy/class_list'
 
 module Effigy
   class View
@@ -43,6 +44,18 @@ module Effigy
 
     def remove(selector)
       select_all(selector).each { |element| element.unlink }
+    end
+
+    def add_class_names(selector, *class_names)
+      element = select(selector)
+      class_list = ClassList.new(element)
+      class_names.each { |class_name| class_list << class_name }
+    end
+
+    def remove_class_names(selector, *class_names)
+      element = select(selector)
+      class_list = ClassList.new(element)
+      class_names.each { |class_name| class_list.remove(class_name) }
     end
 
     private

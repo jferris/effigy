@@ -7,7 +7,7 @@ module Matchers
     end
 
     def matches?(xml)
-      @xml     = xml
+      @xml     = xml.to_s
 
       verify_element_present! &&
         verify_contents! &&
@@ -15,11 +15,11 @@ module Matchers
     end
 
     def failure_message
-      "Expected #{@missing},\nGot: #{elements.to_a.join("\n")}"
+      "Expected #{@missing},\nGot: #{@xml}"
     end
 
     def negative_failure_message
-      "Did not expect #{selector}"
+      "Did not expect #{selector},\nGot: #{@xml}"
     end
 
     private

@@ -27,6 +27,7 @@ view.render(template) do
     view.text('h2', comment.title)
     view.text('p', comment.summary)
     view.attributes('a', :href => url_for(comment))
+    view.add_class_names('h2', 'you') if comment.user == current_user
   end
   view.remove('#no-comments') if post.comments.empty?
 end

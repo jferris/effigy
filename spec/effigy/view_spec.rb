@@ -67,6 +67,32 @@ module Effigy
       xml.should_not have_selector('.yes')
     end
 
+    it "should add the given class names" do
+      template = %{<test class="original"/>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.add_class_names('test', 'one', 'two')
+      end
+
+      xml.should have_selector('test.original')
+      xml.should have_selector('test.one')
+      xml.should have_selector('test.two')
+    end
+
+    it "should remove the given class names" do
+      template = %{<test class="one two three"/>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.remove_class_names('test', 'one', 'two')
+      end
+
+      xml.should have_selector('test.three')
+      xml.should_not have_selector('test.one')
+      xml.should_not have_selector('test.two')
+    end
+
     describe "given a template without .find" do
       def render(&block)
         lambda do
