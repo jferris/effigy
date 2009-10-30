@@ -2,3 +2,4 @@
 .swo
 pkg
 *.gemspec
+tmp

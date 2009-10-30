@@ -1,13 +1,9 @@
 require 'nokogiri'
 require 'effigy/class_list'
+require 'effigy/errors'
 
 module Effigy
   class View
-    def initialize
-      @css_assignments   = {}
-      @xpath_assignments = {}
-    end
-
     def text(selector, content)
       select(selector).content = content
     end

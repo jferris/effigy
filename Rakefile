@@ -13,6 +13,29 @@ Spec::Rake::SpecTask.new do |t|
   t.ruby_opts = ['-rrubygems']
 end
 
+task :rails_root do
+  rails_root = File.join('tmp', 'rails_root')
+  unless File.exist?(rails_root)
+    FileUtils.mkdir_p(File.dirname(rails_root))
+    command = "rails #{rails_root}"
+    output = `#{command} 2>&1`
+    unless $? == 0
+      $stderr.puts "Command failed with status #{$?}:"
+      $stderr.puts command
+      $stderr.puts output
+    end
+  end
+end
+
+
+task :spec => :rails_root
+
+desc "Remove build files"
+task :clean do
+  FileUtils.rm_rf('tmp')
+  FileUtils.rm_rf('pkg')
+end
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
