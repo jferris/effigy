@@ -54,6 +54,14 @@ module Effigy
       class_names.each { |class_name| class_list.remove(class_name) }
     end
 
+    def inner(selector, xml)
+      select(selector).inner_html = xml
+    end
+
+    def outer(selector, xml)
+      select(selector).after(xml).unlink
+    end
+
     private
 
     def transform

@@ -93,6 +93,30 @@ module Effigy
       xml.should_not have_selector('test.two')
     end
 
+    it "should replace an element's inner markup" do
+      template = %{<test><original>contents</original></test>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.inner 'test', '<new>replaced</new>'
+      end
+
+      xml.should have_selector('test new', :contents => 'replaced')
+      xml.should_not have_selector('original')
+    end
+
+    it "should replace an element's outer markup" do
+      template = %{<test><original>contents</original></test>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.outer 'test', '<new>replaced</new>'
+      end
+
+      xml.should have_selector('new', :contents => 'replaced')
+      xml.should_not have_selector('test')
+    end
+
     describe "given a template without .find" do
       def render(&block)
         lambda do
