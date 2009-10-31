@@ -28,7 +28,7 @@ module Effigy
       @current_context = Nokogiri::XML.parse(template)
       yield if block_given?
       transform
-      current_context.to_s
+      output
     end
 
     def context(new_context)
@@ -88,6 +88,10 @@ module Effigy
       item_element = original_element.dup
       context(item_element) { yield(item) }
       item_element
+    end
+
+    def output
+      current_context.to_xhtml
     end
 
   end

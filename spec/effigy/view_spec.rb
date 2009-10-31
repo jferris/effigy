@@ -117,6 +117,12 @@ module Effigy
       xml.should_not have_selector('test')
     end
 
+    it "should render xhtml by default" do
+      template = %{<html/>}
+      xml = Effigy::View.new.render(template)
+      xml.should_not include('xml')
+    end
+
     describe "given a template without .find" do
       def render(&block)
         lambda do
