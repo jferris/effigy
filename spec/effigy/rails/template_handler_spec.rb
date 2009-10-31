@@ -1,6 +1,5 @@
 require 'spec_helper'
 
-RAILS_ROOT = File.join(PROJECT_ROOT, 'tmp', 'rails_root')
 require File.join(RAILS_ROOT, 'config', 'environment')
 require File.join(PROJECT_ROOT, 'rails', 'init')
 require 'action_view/test_case'

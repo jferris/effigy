@@ -19,7 +19,9 @@ task :rails_root do
     FileUtils.mkdir_p(File.dirname(rails_root))
     command = "rails #{rails_root}"
     output = `#{command} 2>&1`
-    unless $? == 0
+    if $? == 0
+      FileUtils.ln_s(FileUtils.pwd, File.join(rails_root, 'vendor', 'plugins'))
+    else
       $stderr.puts "Command failed with status #{$?}:"
       $stderr.puts command
       $stderr.puts output
@@ -64,6 +66,7 @@ begin
   namespace :metrics do
     desc "Run reek"
     Reek::RakeTask.new do |t|
+      t.source_files = FileList['lib/**/*.rb', 'rails/**/*.rb']
       t.fail_on_error = false
     end
   end
