@@ -14,7 +14,8 @@ module Effigy
               hash.update(name => @controller.instance_variable_get(name))
             end
           end
-          #{view_class_name}.new(assigns).render(#{template_source.inspect})
+          view = #{view_class_name}.new(assigns) { |*names| yield(*names) }
+          view.render(#{template_source.inspect})
         RUBY
       end
 

@@ -11,9 +11,11 @@ describe "a controller with an effigy view and template" do
     @files = []
     create_rails_source_file 'app/controllers/magic_controller.rb', <<-RUBY
       class MagicController < ApplicationController
+        layout 'application'
         include ActionController::TestCase::RaiseActionExceptions
         def index
           @spell = 'hocus pocus'
+          render
         end
       end
     RUBY
@@ -27,7 +29,19 @@ describe "a controller with an effigy view and template" do
     RUBY
 
     create_rails_file 'app/templates/magic/index.html', <<-HTML
-      <html><h1>placeholder title</h1></html>
+      <h1 class="success">placeholder title</h1>
+    HTML
+
+    create_rails_file 'app/views/layouts/application.html.effigy', <<-RUBY
+      class LayoutsApplicationView < Effigy::Rails::View
+        def transform
+          inner('body', content_for(:layout))
+        end
+      end
+    RUBY
+
+    create_rails_file 'app/templates/layouts/application.html', <<-HTML
+      <html><body></body></html>
     HTML
 
     @controller = MagicController.new
@@ -53,13 +67,24 @@ describe "a controller with an effigy view and template" do
     load create_rails_file(relative_path, contents)
   end
 
+  def render
+    get :index
+  end
+
   include ActionController::TestProcess
 
   it "should use the view to render the template" do
-    get :index
+    render
     @response.should be_success
     @response.rendered[:template].to_s.should == 'magic/index.html.effigy'
     assigns(:spell).should_not be_nil
-    @response.body.should have_selector('h1', :contents => assigns(:spell))
+    @response.body.should have_selector('h1.success', :contents => assigns(:spell))
+  end
+
+  it "should render an effigy layout" do
+    render
+
+    @response.should be_success
+    @response.body.should have_selector('html body h1.success')
   end
 end
