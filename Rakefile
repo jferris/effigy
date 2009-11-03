@@ -34,8 +34,9 @@ task :spec => :rails_root
 
 desc "Remove build files"
 task :clean do
-  FileUtils.rm_rf('tmp')
-  FileUtils.rm_rf('pkg')
+  %w(tmp pkg doc).each do |path|
+    FileUtils.rm_rf(path)
+  end
 end
 
 begin
@@ -76,4 +77,15 @@ begin
 rescue LoadError => e
   puts e.inspect
   puts "Missing dependencies for metrics."
+end
+
+begin
+  require 'yard'
+
+  YARD::Rake::YardocTask.new do |t|
+    t.files   = ['lib/**/*.rb', 'rails/**/*.rb']
+  end
+rescue LoadError => e
+  puts e.inspect
+  puts "Missing dependencies for yard."
 end

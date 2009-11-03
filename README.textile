@@ -1,0 +1,114 @@
+h1. Effigy
+
+Create usable views in Ruby with HTML and CSS selectors.
+
+h2. Synopsis
+
+In Effigy, your view is a Ruby class that performs transformation on an HTML template. The template is passed to #render, which calls a private #transform method to apply the transformations. The transformed template is then returned as a string of HTML.
+
+<pre>
+template = %{
+  <html>
+    <head>
+      <title></title>
+    </head>
+    <body>
+      <h1></h1>
+      <p class="body"></p>
+      <div class="comment">
+        <h2></h2>
+        <p></p>
+        <a>View more</a>
+      </div>
+      <p id="no-comments">There aren't any comments for this post.</p>
+    </body>
+  </html>
+}
+
+class PostView < Effigy::View
+  attr_reader :post
+
+  def initialize(post)
+    @post = post
+  end
+
+  def transform
+    text('h1', post.title)
+    text('title', "#{post.title} - Site title")
+    text('p.body', post.body)
+    replace_with_each('.comment', post.comments) do |comment|
+      text('h2', comment.title)
+      text('p', comment.summary)
+      attributes('a', :href => url_for(comment))
+    end
+    remove('#no-comments') if post.comments.empty?
+  end
+end
+
+view = PostView.new(post)
+document = view.render(template)
+
+# Result document:
+# <html>
+#   <head>
+#     <title>Post title - Site title</title>
+#   </head>
+#   <body>
+#     <h1>Post title</h1>
+#     <p class="body">Post body</p>
+#     <div class="comment">
+#       <h2>First comment title</h2>
+#       <p>First comment body</p>
+#       <a href="/comments/1">View more</a>
+#     </div>
+#     <div class="comment">
+#       <h2>Second comment title</h2>
+#       <p>Second comment body</p>
+#       <a href="/comments/2">View more</a>
+#     </div>
+#   </body>
+# </html>
+</pre>
+
+See the documentation for more information on available transformations.
+
+h2. Rails
+
+Effigy integrates with Rails. It provides a view subclass that copies instance variables from the controller, a template handler to find Effigy views and templates, and a generator to create skeleton view files.
+
+Example:
+
+<pre>
+# app/controllers/magic_controller.rb
+class MagicController < ApplicationController
+  def index
+    @spell = 'hocus pocus'
+  end
+end
+</pre>
+
+<pre>
+# app/views/magic/index.html.effigy
+class MagicIndexView < Effigy::Rails::View
+  def transform
+    text('h1', @spell)
+  end
+end
+</pre>
+
+<pre>
+# app/templates/magic/index.html
+<h1>Spell name goes here</h1>
+</pre>
+
+View this example in your browser and you'll see "hocus pocus."
+
+h2. Why?
+
+Effigy is based on the idea that putting behavior in your templates is confusing and makes them difficult to maintain, and that the closer an ERB template gets to 50% Ruby, 50% HTML, the closer it gets to total chaos. Complicated views require unintuitive concepts (ERB buffers, capture blocks, etc). ERB also has the constant threat of unescaped user input slipping into a view.
+
+Effigy was created because I have never liked interpolation-based templating languages like ERB and because XSLT is a new language (and I like Ruby just fine).
+
+h2. Author
+
+Effigy was written by Joe Ferris. See LICENSE for license info.

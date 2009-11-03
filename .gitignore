@@ -3,3 +3,4 @@
 pkg
 *.gemspec
 tmp
+doc
