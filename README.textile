@@ -107,7 +107,7 @@ h2. Why?
 
 Effigy is based on the idea that putting behavior in your templates is confusing and makes them difficult to maintain, and that the closer an ERB template gets to 50% Ruby, 50% HTML, the closer it gets to total chaos. Complicated views require unintuitive concepts (ERB buffers, capture blocks, etc). ERB also has the constant threat of unescaped user input slipping into a view.
 
-Effigy was created because I have never liked interpolation-based templating languages like ERB and because XSLT is a new language (and I like Ruby just fine).
+Effigy was created because I have never liked interpolation-based templating languages like ERB and because XSLT requires introducing another language (and I like Ruby just fine).
 
 h2. Author
 
