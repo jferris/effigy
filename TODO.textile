@@ -1,0 +1,5 @@
+* Implement more jQuery manipulation methods
+* Handle Rails layouts specially
+* Find a replacement for Rails partials
+* Include ActionView helpers that don't generate markup
+* Replace ActionView helpers taht generate markup
