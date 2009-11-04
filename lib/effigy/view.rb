@@ -1,6 +1,7 @@
 require 'nokogiri'
 require 'effigy/class_list'
 require 'effigy/errors'
+require 'effigy/selection'
 
 module Effigy
   class View
@@ -61,6 +62,11 @@ module Effigy
     def outer(selector, xml)
       select(selector).after(xml).unlink
     end
+
+    def find(selector)
+      Selection.new(self, selector)
+    end
+    alias_method :f, :find
 
     private
 

@@ -120,7 +120,20 @@ module Effigy
     it "should render xhtml by default" do
       template = %{<html/>}
       xml = Effigy::View.new.render(template)
-      xml.should_not include('xml')
+      xml.should_not include('<?xml')
+    end
+
+    %w(find f).each do |chain_method|
+      it "should allow chains using #{chain_method}" do
+        template = %{<test><element one="abc">something</element></test>}
+
+        view = Effigy::View.new
+        xml = view.render(template) do
+          view.send(chain_method, 'element').text('expected')
+        end
+
+        xml.should have_selector(:element, :contents => 'expected', :one => 'abc')
+      end
     end
 
     describe "given a template without .find" do

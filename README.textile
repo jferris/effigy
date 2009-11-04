@@ -72,6 +72,34 @@ document = view.render(template)
 
 See the documentation for more information on available transformations.
 
+h2. Chaining
+
+If you prefer, you can select elements and then apply tranformations in a chain. The previous example could have been written like this:
+
+<pre>
+class PostView < Effigy::View
+  attr_reader :post
+
+  def initialize(post)
+    @post = post
+  end
+
+  def transform
+    find('h1').text(post.title)
+    find('title').text("#{post.title} - Site title")
+    find('p.body').text(post.body)
+    find('.comment').replace_with_each(post.comments) do |comment|
+      find('h2').text(comment.title)
+      find('p').text(comment.summary)
+      find('a').attributes(:href => url_for(comment))
+    end
+    find('#no-comments').remove if post.comments.empty?
+  end
+end
+</pre>
+
+#find is also aliased as #f for brevity, if you're into that sort of thing.
+
 h2. Rails
 
 Effigy integrates with Rails. It provides a view subclass that copies instance variables from the controller, a template handler to find Effigy views and templates, and a generator to create skeleton view files.
