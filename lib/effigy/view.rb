@@ -130,14 +130,50 @@ module Effigy
       class_names.each { |class_name| class_list.remove(class_name) }
     end
 
+    # Replaces the contents of the selected element with live markup.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @param [String] xml the new contents of the selected element. Markup is
+    #   not escaped.
+    # @example
+    #   html('p', '<b>Welcome!</b>')
+    #   find('p').html('<b>Welcome!</b>')
     def html(selector, xml)
       select(selector).inner_html = xml
     end
 
+    # Replaces the selected element with live markup.
+    #
+    # The "outer HTML" for the selected tag itself is also replaced.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @param [String] xml the new markup to replace the selected element. Markup is
+    #   not escaped.
     def replace_with(selector, xml)
       select(selector).after(xml).unlink
     end
 
+    # Selects an element or elements for chained transformation.
+    #
+    # If given a block, the selection will be in effect during the block.
+    #
+    # If not given a block, a {Selection} will be returned on which
+    # transformation methods can be called. Any methods called on the
+    # Selection will be delegated back to the view with the selector inserted
+    # into the parameter list.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @return [Selection] a proxy object on which transformation methods can be
+    #   called
+    # @example
+    #   find('.post') do
+    #     text('h1', post.title)
+    #     text('p', post.body)
+    #   end
+    #   find('h1').text(post.title).add_class('active')
     def find(selector)
       if block_given?
         old_context = @current_context
