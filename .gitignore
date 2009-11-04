@@ -4,3 +4,4 @@ pkg
 *.gemspec
 tmp
 doc
+.yardoc

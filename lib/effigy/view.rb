@@ -4,11 +4,49 @@ require 'effigy/errors'
 require 'effigy/selection'
 
 module Effigy
+  # Accepts a template to be transformed.
+  #
+  # For most common cases, creating a subclass makes the most sense, but this
+  # class can be used directly by passing a block to {#render}.
+  #
+  # @see #transform
+  # @see #render
+  # @example
+  # view = Effigy::View.new
+  # view.render(template) do
+  #   view.find('h1').text('the title')
+  # end
+  #
   class View
+    # Replaces the text content of the selected element.
+    #
+    # Markup in the given content is escaped. Use {#html} if you want to
+    # replace the contents with live markup.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @param [String] content the text that should be the new element contents
+    # @example
+    #   text('h1', 'a title')
+    #   find('h1').text('a title')
+    #   text('p', '<b>title</b>') # <p>&lt;b&gt;title&lt;/title&gt;</p>
     def text(selector, content)
       select(selector).content = content
     end
 
+    # Adds or updates the given attribute or attributes of the selected element.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @param [String,Hash] attributes_or_attribute_name if a String, replaces
+    #   that attribute with the given value. If a Hash, uses the keys as
+    #   attribute names and values as attribute values
+    # @param [String] value the value for the replaced attribute. Used only if
+    #   attributes_or_attribute_name is a String
+    # @example
+    #   attr('p', :id => 'an_id', :style => 'display: none')
+    #   attr('p', :id, 'an_id')
+    #   find('p').attr(:id, 'an_id')
     def attr(selector, attributes_or_attribute_name, value = nil)
       element = select(selector)
       attributes = attributes_or_attribute_name.to_effigy_attributes(value)
@@ -17,6 +55,17 @@ module Effigy
       end
     end
 
+    # Replaces the selected element with a clone for each item in the collection.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @param [Enumerable] collection the items that are the base for each
+    #   cloned element
+    # @example
+    #   titles = %w(one two three)
+    #   find('.post').replace_each(titles) do |title|
+    #     text('h1', title)
+    #   end
     def replace_each(selector, collection, &block)
       original_element = select(selector)
       collection.inject(original_element) do |sibling, item|
@@ -26,6 +75,13 @@ module Effigy
       original_element.unlink
     end
 
+    # Perform transformations on the given template.
+    #
+    # @yield inside the given block, transformation methods such as #text and
+    #   #html can be used on the template. Using a subclass, you can instead
+    #   override the #transform method, which is the preferred approach.
+    #
+    # @return [String] the resulting document
     def render(template)
       @current_context = Nokogiri::XML.parse(template)
       yield if block_given?
@@ -33,6 +89,13 @@ module Effigy
       output
     end
 
+    # Removes the selected elements from the template.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @example
+    #   remove('.post') # removes all elements with a class of "post"
+    #   find('.post').remove
     def remove(selector)
       select_all(selector).each { |element| element.unlink }
     end
@@ -69,10 +132,10 @@ module Effigy
     end
     alias_method :f, :find
 
-    private
-
     def transform
     end
+
+    private
 
     attr_reader :current_context
 
