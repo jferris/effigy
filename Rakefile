@@ -55,6 +55,8 @@ begin
     gem.email   = %q{jferris@thoughtbot.com}
 
     gem.platform = Gem::Platform::RUBY
+
+    gem.add_runtime_dependency 'nokogiri'
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

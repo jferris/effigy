@@ -131,6 +131,16 @@ end
 
 View this example in your browser and you'll see "hocus pocus."
 
+h2. Install
+
+Effigy is distributed as a gem through gemcutter:
+
+<pre>
+sudo gem install effigy -s http://gemcutter.org
+</pre>
+
+Effigy requires Nokogiri.
+
 h2. Why?
 
 Effigy is based on the idea that putting behavior in your templates is confusing and makes them difficult to maintain, and that the closer an ERB template gets to 50% Ruby, 50% HTML, the closer it gets to total chaos. Complicated views require unintuitive concepts (ERB buffers, capture blocks, etc). ERB also has the constant threat of unescaped user input slipping into a view.
