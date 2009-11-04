@@ -9,14 +9,15 @@ module Effigy
       select(selector).content = content
     end
 
-    def attributes(selector, attributes)
+    def attr(selector, attributes_or_attribute_name, value = nil)
       element = select(selector)
+      attributes = attributes_or_attribute_name.to_effigy_attributes(value)
       attributes.each do |attribute, value|
         element[attribute.to_s] = value
       end
     end
 
-    def replace_with_each(selector, collection, &block)
+    def replace_each(selector, collection, &block)
       original_element = select(selector)
       collection.inject(original_element) do |sibling, item|
         item_element = clone_element_with_item(original_element, item, &block)
@@ -32,39 +33,39 @@ module Effigy
       output
     end
 
-    def context(new_context)
-      old_context = @current_context
-      @current_context = select(new_context)
-      yield
-      @current_context = old_context
-    end
-
     def remove(selector)
       select_all(selector).each { |element| element.unlink }
     end
 
-    def add_class_names(selector, *class_names)
+    def add_class(selector, *class_names)
       element = select(selector)
       class_list = ClassList.new(element)
       class_names.each { |class_name| class_list << class_name }
     end
 
-    def remove_class_names(selector, *class_names)
+    def remove_class(selector, *class_names)
       element = select(selector)
       class_list = ClassList.new(element)
       class_names.each { |class_name| class_list.remove(class_name) }
     end
 
-    def inner(selector, xml)
+    def html(selector, xml)
       select(selector).inner_html = xml
     end
 
-    def outer(selector, xml)
+    def replace_with(selector, xml)
       select(selector).after(xml).unlink
     end
 
     def find(selector)
-      Selection.new(self, selector)
+      if block_given?
+        old_context = @current_context
+        @current_context = select(selector)
+        yield
+        @current_context = old_context
+      else
+        Selection.new(self, selector)
+      end
     end
     alias_method :f, :find
 
@@ -92,7 +93,7 @@ module Effigy
 
     def clone_element_with_item(original_element, item, &block)
       item_element = original_element.dup
-      context(item_element) { yield(item) }
+      find(item_element) { yield(item) }
       item_element
     end
 

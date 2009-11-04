@@ -1,10 +1,12 @@
 require 'spec_helper'
 require 'effigy/view'
 require 'effigy/errors'
+require 'effigy/core_ext/hash'
+require 'effigy/core_ext/object'
 
 module Effigy
   describe View do
-    it "should replace element contents" do
+    it "should replace element text" do
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
@@ -20,10 +22,21 @@ module Effigy
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.attributes 'element', :one => '123', :two => '234'
+        view.attr 'element', :one => '123', :two => '234'
       end
 
       xml.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
+    end
+
+    it "should replace one attribute" do
+      template = %{<test><element one="abc">something</element></test>}
+
+      view = Effigy::View.new
+      xml = view.render(template) do
+        view.attr 'element', :one, '123'
+      end
+
+      xml.should have_selector(:element, :contents => 'something', :one => '123')
     end
 
     it "should replace an element with a clone for each item in a collection" do
@@ -31,7 +44,7 @@ module Effigy
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.replace_with_each('element', %w(one two)) do |value|
+        view.replace_each('element', %w(one two)) do |value|
           view.text('value', value)
         end
       end
@@ -47,7 +60,7 @@ module Effigy
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.context('element') do
+        view.find('element') do
           view.text('value', 'expected')
         end
       end
@@ -72,7 +85,7 @@ module Effigy
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.add_class_names('test', 'one', 'two')
+        view.add_class('test', 'one', 'two')
       end
 
       xml.should have_selector('test.original')
@@ -85,7 +98,7 @@ module Effigy
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.remove_class_names('test', 'one', 'two')
+        view.remove_class('test', 'one', 'two')
       end
 
       xml.should have_selector('test.three')
@@ -98,7 +111,7 @@ module Effigy
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.inner 'test', '<new>replaced</new>'
+        view.html 'test', '<new>replaced</new>'
       end
 
       xml.should have_selector('test new', :contents => 'replaced')
@@ -110,7 +123,7 @@ module Effigy
 
       view = Effigy::View.new
       xml = view.render(template) do
-        view.outer 'test', '<new>replaced</new>'
+        view.replace_with 'test', '<new>replaced</new>'
       end
 
       xml.should have_selector('new', :contents => 'replaced')
@@ -149,12 +162,12 @@ module Effigy
       end
 
       it "should raise when updating attributes for .find" do
-        render { |view| view.attributes('.find', :attr => 'value') }.
+        render { |view| view.attr('.find', :attr => 'value') }.
           should raise_error(Effigy::ElementNotFound)
       end
 
       it "should raise when replacing an element matching .find" do
-        render { |view| view.replace_with_each('.find', []) }.
+        render { |view| view.replace_each('.find', []) }.
           should raise_error(Effigy::ElementNotFound)
       end
 
@@ -164,7 +177,7 @@ module Effigy
       end
 
       it "should raise when setting the context to .find" do
-        render { |view| view.context('.find') }.
+        render { |view| view.find('.find') {} }.
           should raise_error(Effigy::ElementNotFound)
       end
     end

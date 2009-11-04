@@ -36,10 +36,10 @@ class PostView < Effigy::View
     text('h1', post.title)
     text('title', "#{post.title} - Site title")
     text('p.body', post.body)
-    replace_with_each('.comment', post.comments) do |comment|
+    replace_each('.comment', post.comments) do |comment|
       text('h2', comment.title)
       text('p', comment.summary)
-      attributes('a', :href => url_for(comment))
+      attr('a', :href => url_for(comment))
     end
     remove('#no-comments') if post.comments.empty?
   end
@@ -88,10 +88,10 @@ class PostView < Effigy::View
     find('h1').text(post.title)
     find('title').text("#{post.title} - Site title")
     find('p.body').text(post.body)
-    find('.comment').replace_with_each(post.comments) do |comment|
+    find('.comment').replace_each(post.comments) do |comment|
       find('h2').text(comment.title)
       find('p').text(comment.summary)
-      find('a').attributes(:href => url_for(comment))
+      find('a').attr(:href => url_for(comment))
     end
     find('#no-comments').remove if post.comments.empty?
   end

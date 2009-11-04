@@ -34,7 +34,7 @@ describe "a controller with an effigy view and template" do
     create_rails_file 'app/views/layouts/application.html.effigy', <<-RUBY
       class LayoutsApplicationView < Effigy::Rails::View
         def transform
-          inner('body', content_for(:layout))
+          html('body', content_for(:layout))
         end
       end
     RUBY
