@@ -186,13 +186,44 @@ module Effigy
     end
     alias_method :f, :find
 
+    # Called by {#render} to perform transformations on the source template.
+    #
+    # Override this method in subclasses to perform the transformations
+    # specific to your view.
+    #
+    # @example
+    #   class PostView < Effigy::View
+    #     def initialize(post)
+    #       @post = post
+    #     end
+    #
+    #     def transform
+    #       find('.post') do
+    #         find('h2').text(post.title)
+    #         find('p').text(post.body)
+    #       end
+    #     end
+    #   end
     def transform
     end
 
     private
 
+    # The current set of nodes on which transformations are performed.
+    #
+    # This is usually the entire document, but will be a subset of child nodes
+    # during {#find} blocks.
     attr_reader :current_context
 
+    # Returns the first node that matches the given selection, or the nodes
+    # themselves if given a set of nodes.
+    #
+    # @param nodes [String,Nokogiri::XML::NodeSet] if a String, the selector to
+    #   use when determining the current context. When a NodeSet, the set of
+    #   nodes that should be returned.
+    # @return [Nokogiri::XML::NodeSet] the nodes selected by the given selector
+    #   or node set.
+    # @raise [ElementNotFound] if no nodes match the given selector
     def select(nodes)
       if nodes.respond_to?(:search)
         nodes
@@ -202,18 +233,39 @@ module Effigy
       end
     end
 
+    # Returns a set of nodes matching the given selector.
+    #
+    # @param selector [String] the selctor to use when finding nodes
+    # @return [Nokogiri::XML::NodeSet] the nodes selected by the given selector
+    # @raise [ElementNotFound] if no nodes match the given selector
     def select_all(selector)
       result = current_context.search(selector)
       raise ElementNotFound, selector if result.empty?
       result
     end
 
+    # Clones an element, sets it as the current context, and yields to the
+    # given block with the given item.
+    #
+    # @param [Nokogiri::XML::Element] the element to clone
+    # @param [Object] item the item that should be yielded to the block
+    # @yield [Object] the item passed as item
+    # @return [Nokogiri::XML::Element] the clone of the original element
     def clone_element_with_item(original_element, item, &block)
       item_element = original_element.dup
       find(item_element) { yield(item) }
       item_element
     end
 
+    # Converts the transformed document to a string.
+    #
+    # Called by {#render} after transforming the document using a passed block
+    # and {#transform}.
+    #
+    # Override this in subclasses if you wish to return something besides an
+    # XHTML string representation of the transformed document.
+    #
+    # @return [String] the transformed document as a string
     def output
       current_context.to_xhtml
     end
