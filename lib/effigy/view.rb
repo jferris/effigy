@@ -94,18 +94,36 @@ module Effigy
     # @param [String] selector a CSS or XPath string describing the element to
     #   transform
     # @example
-    #   remove('.post') # removes all elements with a class of "post"
+    #   remove('.post')
     #   find('.post').remove
     def remove(selector)
       select_all(selector).each { |element| element.unlink }
     end
 
+    # Adds the given class names to the selected element.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @param [String] class_names a CSS class name that should be added
+    # @example
+    #   add_class('a#home', 'selected')
+    #   find('a#home').add_class('selected')
     def add_class(selector, *class_names)
       element = select(selector)
       class_list = ClassList.new(element)
       class_names.each { |class_name| class_list << class_name }
     end
 
+    # Removes the given class names from the selected element.
+    #
+    # Ignores class names that are not present.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   transform
+    # @param [String] class_names a CSS class name that should be removed
+    # @example
+    #   remove_class('a#home', 'selected')
+    #   find('a#home').remove_class('selected')
     def remove_class(selector, *class_names)
       element = select(selector)
       class_list = ClassList.new(element)
