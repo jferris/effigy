@@ -68,9 +68,9 @@ begin
 
   namespace :metrics do
     desc "Run reek"
-    Reek::RakeTask.new do |t|
-      t.source_files = FileList['lib/**/*.rb', 'rails/**/*.rb']
-      t.fail_on_error = false
+    task "reek" do
+      files = FileList['lib/**/*.rb', 'rails/**/*.rb'].to_a.join(' ')
+      system("reek -q #{files}")
     end
   end
 
