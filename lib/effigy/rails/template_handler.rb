@@ -32,7 +32,15 @@ module Effigy
       end
 
       def view_class_name
-        [base_path, view_name, 'view'].join('_').camelize
+        view_class_components.join('_').camelize.sub(/^Layouts/, '')
+      end
+
+      def view_class_components
+        [base_path, view_name, layout? ? 'layout' : 'view']
+      end
+
+      def layout?
+        base_path =~ /^layouts/
       end
 
       def template_source

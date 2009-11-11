@@ -39,20 +39,42 @@ class EffigyViewGenerator < Rails::Generator::NamedBase
     end
 
     def effigy_view(view_name)
-      view_path       = File.join('app', 'views', @controller_path, "#{view_name}.html.effigy")
-      template_path   = File.join('app', 'templates', @controller_path, "#{view_name}.html")
-      view_class_name = "#{@controller_path.camelize}#{view_name.camelize}View".sub(/^::/, '')
+      view_path     = File.join('app', 'views', @controller_path, "#{view_name}.html.effigy")
+      template_path = File.join('app', 'templates', @controller_path, "#{view_name}.html")
+      assigns       = { :view_class_name => view_class_name(view_name),
+                        :template_path   => template_path,
+                        :view_path       => view_path }
 
-      template 'view.erb',
+      template template_for('view'),
                view_path,
-               :assigns => { :view_class_name => view_class_name,
-                             :template_path   => template_path }
+               :assigns => assigns
 
-      template 'template.erb',
+      template template_for('template'),
                template_path,
-               :assigns => { :view_class_name => view_class_name,
-                             :template_path   => template_path,
-                             :view_path       => view_path }
+               :assigns => assigns
+    end
+
+    private
+
+    def view_class_name(view_name)
+      prefix = "#{@controller_path.camelize}#{view_name.camelize}"
+      if layout?
+        "#{prefix}Layout".sub(/^::Layouts(::)?/, '')
+      else
+        "#{prefix}View".sub(/^::/, '')
+      end
+    end
+
+    def template_for(file)
+      if layout?
+        "layout_#{file}.erb"
+      else
+        "#{file}.erb"
+      end
+    end
+
+    def layout?
+      @controller_path =~ /^\/layouts/
     end
   end
 
