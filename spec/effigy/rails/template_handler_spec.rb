@@ -8,44 +8,6 @@ require 'nokogiri'
 describe "a controller with an effigy view and template" do
   before do
     @files = []
-    create_rails_source_file 'app/controllers/magic_controller.rb', <<-RUBY
-      class MagicController < ApplicationController
-        layout 'application'
-        include ActionController::TestCase::RaiseActionExceptions
-        def index
-          @spell = 'hocus pocus'
-          render
-        end
-      end
-    RUBY
-
-    create_rails_file 'app/views/magic/index.html.effigy', <<-RUBY
-      class MagicIndexView < Effigy::Rails::View
-        def transform
-          text('h1', @spell)
-        end
-      end
-    RUBY
-
-    create_rails_file 'app/templates/magic/index.html', <<-HTML
-      <h1 class="success">placeholder title</h1>
-    HTML
-
-    create_rails_file 'app/views/layouts/application.html.effigy', <<-RUBY
-      class ApplicationLayout < Effigy::Rails::View
-        def transform
-          html('body', content_for(:layout))
-        end
-      end
-    RUBY
-
-    create_rails_file 'app/templates/layouts/application.html', <<-HTML
-      <html><body></body></html>
-    HTML
-
-    @controller = MagicController.new
-    @request    = ActionController::TestRequest.new
-    @response   = ActionController::TestResponse.new
   end
 
   after do
@@ -67,13 +29,39 @@ describe "a controller with an effigy view and template" do
   end
 
   def render
+    @request  ||= ActionController::TestRequest.new
+    @response ||= ActionController::TestResponse.new
     get :index
   end
 
   include ActionController::TestProcess
 
   it "should use the view to render the template" do
+    create_rails_source_file 'app/controllers/magic_controller.rb', <<-RUBY
+      class MagicController < ApplicationController
+        def index
+          @spell = 'hocus pocus'
+          render
+        end
+      end
+    RUBY
+
+    create_rails_file 'app/views/magic/index.html.effigy', <<-RUBY
+      class MagicIndexView < Effigy::Rails::View
+        def transform
+          text('h1', @spell)
+        end
+      end
+    RUBY
+
+    create_rails_file 'app/templates/magic/index.html', <<-HTML
+      <h1 class="success">placeholder title</h1>
+    HTML
+
+    @controller = MagicController.new
+
     render
+
     @response.should be_success
     @response.rendered[:template].to_s.should == 'magic/index.html.effigy'
     assigns(:spell).should_not be_nil
@@ -81,6 +69,35 @@ describe "a controller with an effigy view and template" do
   end
 
   it "should render an effigy layout" do
+    create_rails_source_file 'app/controllers/magic_controller.rb', <<-RUBY
+      class MagicController < ApplicationController
+        layout 'application'
+      end
+    RUBY
+
+    create_rails_file 'app/views/magic/index.html.effigy', <<-RUBY
+      class MagicIndexView < Effigy::Rails::View
+      end
+    RUBY
+
+    create_rails_file 'app/templates/magic/index.html', <<-HTML
+      <h1 class="success">title</h1>
+    HTML
+
+    create_rails_file 'app/views/layouts/application.html.effigy', <<-RUBY
+      class ApplicationLayout < Effigy::Rails::View
+        def transform
+          html('body', content_for(:layout))
+        end
+      end
+    RUBY
+
+    create_rails_file 'app/templates/layouts/application.html', <<-HTML
+      <html><body></body></html>
+    HTML
+
+    @controller = MagicController.new
+
     render
 
     @response.should be_success
