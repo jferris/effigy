@@ -28,10 +28,15 @@ describe "a controller with an effigy view and template" do
     load create_rails_file(relative_path, contents)
   end
 
-  def render
+  def render(controller, action = :index)
+    @controller = controller
+    class << @controller
+      include ActionController::TestCase::RaiseActionExceptions
+    end
     @request  ||= ActionController::TestRequest.new
     @response ||= ActionController::TestResponse.new
     get :index
+    @response
   end
 
   include ActionController::TestProcess
@@ -58,14 +63,12 @@ describe "a controller with an effigy view and template" do
       <h1 class="success">placeholder title</h1>
     HTML
 
-    @controller = MagicController.new
+    response = render(MagicController.new)
 
-    render
-
-    @response.should be_success
-    @response.rendered[:template].to_s.should == 'magic/index.html.effigy'
+    response.should be_success
+    response.rendered[:template].to_s.should == 'magic/index.html.effigy'
     assigns(:spell).should_not be_nil
-    @response.body.should have_selector('h1.success', :contents => assigns(:spell))
+    response.body.should have_selector('h1.success', :contents => assigns(:spell))
   end
 
   it "should render an effigy layout" do
@@ -96,11 +99,48 @@ describe "a controller with an effigy view and template" do
       <html><body></body></html>
     HTML
 
-    @controller = MagicController.new
+    response = render(MagicController.new)
 
-    render
+    response.should be_success
+    response.body.should have_selector('html body h1.success')
+  end
 
-    @response.should be_success
-    @response.body.should have_selector('html body h1.success')
+  it "should render an effigy partial" do
+    create_rails_source_file 'app/controllers/magic_controller.rb', <<-RUBY
+      class WandController < ApplicationController
+      end
+    RUBY
+
+    create_rails_file 'app/views/wand/index.html.effigy', <<-RUBY
+      class WandIndexView < Effigy::Rails::View
+        def transform
+          replace_with('p', partial('spell', :locals  => { :name => 'hocus pocus' }))
+        end
+      end
+    RUBY
+
+    create_rails_file 'app/templates/wand/index.html', <<-HTML
+      <html><body>
+        <h1 class="success">spell</h1>
+        <p>placeholder</p>
+      </body></html>
+    HTML
+
+    create_rails_file 'app/views/wand/_spell.html.effigy', <<-RUBY
+      class WandSpellPartial < Effigy::Rails::View
+        def transform
+          text('p', @name)
+        end
+      end
+    RUBY
+
+    create_rails_file 'app/templates/wand/_spell.html', <<-HTML
+      <p>put a spell on me</p>
+    HTML
+
+    response = render(WandController.new)
+
+    response.should be_success
+    response.body.should have_selector('html body p', :contents => 'hocus pocus')
   end
 end

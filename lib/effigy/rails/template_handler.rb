@@ -13,8 +13,11 @@ module Effigy
             assigns = variables.inject({}) do |hash, name|
               hash.update(name => @controller.instance_variable_get(name))
             end
+            local_assigns.each do |name, value|
+              assigns.update("@\#{name}" => value)
+            end
           end
-          view = #{view_class_name}.new(assigns) { |*names| yield(*names) }
+          view = #{view_class_name}.new(self, assigns) { |*names| yield(*names) }
           view.render(#{template_source.inspect})
         RUBY
       end
@@ -36,11 +39,25 @@ module Effigy
       end
 
       def view_class_components
-        [base_path, view_name, layout? ? 'layout' : 'view']
+        [base_path, view_name.sub(/^_/, ''), view_class_suffix]
+      end
+
+      def view_class_suffix
+        if layout?
+          'layout'
+        elsif partial?
+          'partial'
+        else
+          'view'
+        end
       end
 
       def layout?
         base_path =~ /^layouts/
+      end
+
+      def partial?
+        @view.name =~ /^_/
       end
 
       def template_source
