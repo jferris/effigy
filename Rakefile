@@ -2,35 +2,25 @@ require 'rubygems'
 require 'rake'
 require 'rake/gempackagetask'
 
-require 'spec/rake/spectask'
-
 desc 'Default: run the specs and metrics.'
 task :default => [:spec, :metrics]
 
-Spec::Rake::SpecTask.new do |t|
-  t.spec_opts = ['--color', '--format', 'progress']
-  t.libs = %w(spec)
-  t.ruby_opts = ['-rrubygems']
-end
+begin
+  require 'spec/rake/spectask'
 
-task :rails_root do
-  rails_root = File.join('tmp', 'rails_root')
-  unless File.exist?(rails_root)
-    FileUtils.mkdir_p(File.dirname(rails_root))
-    command = "rails #{rails_root}"
-    output = `#{command} 2>&1`
-    if $? == 0
-      FileUtils.ln_s(FileUtils.pwd, File.join(rails_root, 'vendor', 'plugins'))
-    else
-      $stderr.puts "Command failed with status #{$?}:"
-      $stderr.puts command
-      $stderr.puts output
-    end
+  Spec::Rake::SpecTask.new do |t|
+    t.spec_opts = ['--color', '--format', 'progress']
+    t.libs = %w(spec)
+    t.ruby_opts = ['-rrubygems']
+  end
+
+  task :spec => :rails_root
+rescue LoadError => exception
+  puts "Missing dependencies for specs"
+  task :spec do
+    raise exception
   end
 end
-
-
-task :spec => :rails_root
 
 desc "Remove build files"
 task :clean do
@@ -60,26 +50,27 @@ begin
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
+  puts "Missing dependencies for jeweler"
 end
 
-begin
-  require 'reek/adapters/rake_task'
-
-  namespace :metrics do
-    desc "Run reek"
-    task "reek" do
+namespace :metrics do
+  desc "Run reek"
+  begin
+    require 'reek/adapters/rake_task'
+    task :reek do
       files = FileList['lib/**/*.rb', 'rails/**/*.rb'].to_a.join(' ')
       system("reek -q #{files}")
     end
+  rescue LoadError => exception
+    puts "Missing dependencies for metrics."
+    task :reek do
+      puts exception.inspect
+    end
   end
-
-  desc "Run all metrics"
-  task :metrics => ['metrics:reek']
-rescue LoadError => e
-  puts e.inspect
-  puts "Missing dependencies for metrics."
 end
+
+desc "Run all metrics"
+task :metrics => ['metrics:reek']
 
 begin
   require 'yard'
@@ -87,7 +78,9 @@ begin
   YARD::Rake::YardocTask.new do |t|
     t.files   = ['lib/**/*.rb', 'rails/**/*.rb']
   end
-rescue LoadError => e
-  puts e.inspect
+rescue LoadError => exception
   puts "Missing dependencies for yard."
+  task :yard do
+    raise exception
+  end
 end
