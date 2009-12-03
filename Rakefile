@@ -55,7 +55,8 @@ begin
     gem.files        = FileList['[A-Z]*',
                                 'lib/**/*.rb',
                                 'spec/**/*.rb',
-                                'rails/**/*.rb']
+                                'rails/**/*.rb',
+                                'generators/**/*.*']
     gem.require_path = 'lib'
     gem.test_files   = Dir[*['spec/**/*_spec.rb']]
 

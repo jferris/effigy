@@ -46,7 +46,7 @@ describe "script/generate effigy_view users create" do
   end
 
   it "should create a view file" do
-    view_path.should contain("class #{@view_class_name} < Rails::Effigy::View")
+    view_path.should contain("class #{@view_class_name} < Effigy::Rails::View")
     view_path.should contain("private")
     view_path.should contain("def transform")
     view_path.should contain(relative_template_path)
@@ -93,7 +93,7 @@ describe "script/generate effigy_view layouts narrow" do
   end
 
   it "should create a view file" do
-    view_path.should contain("class #{@layout_class_name} < Rails::Effigy::View")
+    view_path.should contain("class #{@layout_class_name} < Effigy::Rails::View")
     view_path.should contain("private")
     view_path.should contain("def transform")
     view_path.should contain("html('body', content_for(:layout))")
