@@ -5,6 +5,22 @@ require 'rake/gempackagetask'
 desc 'Default: run the specs and metrics.'
 task :default => [:spec, :metrics]
 
+task :rails_root do
+  rails_root = File.join('tmp', 'rails_root')
+  unless File.exist?(rails_root)
+    FileUtils.mkdir_p(File.dirname(rails_root))
+    command = "rails #{rails_root}"
+    output = `#{command} 2>&1`
+    if $? == 0
+      FileUtils.ln_s(FileUtils.pwd, File.join(rails_root, 'vendor', 'plugins'))
+    else
+      $stderr.puts "Command failed with status #{$?}:"
+      $stderr.puts command
+      $stderr.puts output
+    end
+  end
+end
+
 begin
   require 'spec/rake/spectask'
 
