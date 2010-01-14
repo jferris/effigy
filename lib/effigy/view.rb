@@ -2,6 +2,8 @@ require 'nokogiri'
 require 'effigy/class_list'
 require 'effigy/errors'
 require 'effigy/selection'
+require 'effigy/core_ext/hash'
+require 'effigy/core_ext/object'
 
 module Effigy
   # Accepts a template to be transformed.

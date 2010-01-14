@@ -1,8 +1,5 @@
 require 'spec_helper'
 require 'effigy/view'
-require 'effigy/errors'
-require 'effigy/core_ext/hash'
-require 'effigy/core_ext/object'
 
 module Effigy
   describe View do
