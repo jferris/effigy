@@ -31,6 +31,13 @@ begin
   end
 
   task :spec => :rails_root
+
+  desc "Run all specs individually to ensure that requires are correct"
+  task :check_requires do
+    Dir["spec/**/*_spec.rb"].each do |spec_file|
+      system("spec -cfp #{spec_file}") or raise "Failed while running #{spec_file}"
+    end
+  end
 rescue LoadError => exception
   puts "Missing dependencies for specs"
   task :spec do
