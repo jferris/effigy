@@ -136,13 +136,13 @@ module Effigy
     #
     # @param [String] selector a CSS or XPath string describing the element to
     #   transform
-    # @param [String] html the new contents of the selected element. Markup is
+    # @param [String] inner_html the new contents of the selected element. Markup is
     #   not escaped.
     # @example
     #   html('p', '<b>Welcome!</b>')
     #   find('p').html('<b>Welcome!</b>')
-    def html(selector, html)
-      select(selector).inner_html = html
+    def html(selector, inner_html)
+      select(selector).inner_html = inner_html
     end
 
     # Replaces the selected element with live markup.
@@ -155,6 +155,19 @@ module Effigy
     #   not escaped.
     def replace_with(selector, html)
       select(selector).after(html).unlink
+    end
+
+    # Adds the given markup to the end of the selected element.
+    #
+    # @param [String] selector a CSS or XPath string describing the element to
+    #   which this HTML should be appended
+    # @param [String] html_to_append the new markup to append to the selected
+    #   element. Markup is not escaped.
+    def append(selector, html_to_append)
+      node = select(selector)
+      current_context.fragment(html_to_append).children.each do |child|
+        node << child
+      end
     end
 
     # Selects an element or elements for chained transformation.

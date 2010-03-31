@@ -127,6 +127,19 @@ module Effigy
       html.should_not have_selector('test')
     end
 
+    it "should append text to an element" do
+      template = %{<test>start</test>}
+
+      view = Effigy::View.new
+      html = view.render(template) do
+        view.append 'test', '<p>middle</p><p>end</p>'
+      end
+
+      html.should include("<test>start")
+      html.should have_selector('test p', :contents => 'middle')
+      html.should have_selector('test p', :contents => 'end')
+    end
+
     it "should render html by default" do
       template = %{<html/>}
       html = Effigy::View.new.render(template)
