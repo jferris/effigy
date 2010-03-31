@@ -7,131 +7,144 @@ module Effigy
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.text 'element', 'expected'
       end
 
-      xml.should have_selector(:element, :contents => 'expected', :one => 'abc')
+      html.should have_selector(:element, :contents => 'expected', :one => 'abc')
     end
 
     it "should replace element attributes" do
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.attr 'element', :one => '123', :two => '234'
       end
 
-      xml.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
+      html.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
     end
 
     it "should replace one attribute" do
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.attr 'element', :one, '123'
       end
 
-      xml.should have_selector(:element, :contents => 'something', :one => '123')
+      html.should have_selector(:element, :contents => 'something', :one => '123')
     end
 
     it "should replace an element with a clone for each item in a collection" do
       template = %{<test><element><value>original</value></element></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.replace_each('element', %w(one two)) do |value|
           view.text('value', value)
         end
       end
 
-      xml.should have_selector('element value', :contents => 'one')
-      xml.should have_selector('element value', :contents => 'two')
-      xml.should_not have_selector('element value', :contents => 'original')
-      xml.should =~ /one.*two/m
+      html.should have_selector('element value', :contents => 'one')
+      html.should have_selector('element value', :contents => 'two')
+      html.should_not have_selector('element value', :contents => 'original')
+      html.should =~ /one.*two/m
     end
 
     it "should replace within a context" do
       template = %{<test><element><value>original</value></element></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.find('element') do
           view.text('value', 'expected')
         end
       end
 
-      xml.should have_selector('element value', :contents => 'expected')
+      html.should have_selector('element value', :contents => 'expected')
     end
 
     it "should remove all matching elements" do
       template = %{<test><first class="yes"/><other class="yes"/><last class="no"/></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.remove('.yes')
       end
 
-      xml.should have_selector('.no')
-      xml.should_not have_selector('.yes')
+      html.should have_selector('.no')
+      html.should_not have_selector('.yes')
     end
 
     it "should add the given class names" do
       template = %{<test class="original"/>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.add_class('test', 'one', 'two')
       end
 
-      xml.should have_selector('test.original')
-      xml.should have_selector('test.one')
-      xml.should have_selector('test.two')
+      html.should have_selector('test.original')
+      html.should have_selector('test.one')
+      html.should have_selector('test.two')
     end
 
     it "should remove the given class names" do
       template = %{<test class="one two three"/>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.remove_class('test', 'one', 'two')
       end
 
-      xml.should have_selector('test.three')
-      xml.should_not have_selector('test.one')
-      xml.should_not have_selector('test.two')
+      html.should have_selector('test.three')
+      html.should_not have_selector('test.one')
+      html.should_not have_selector('test.two')
     end
 
     it "should replace an element's inner markup" do
       template = %{<test><original>contents</original></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.html 'test', '<new>replaced</new>'
       end
 
-      xml.should have_selector('test new', :contents => 'replaced')
-      xml.should_not have_selector('original')
+      html.should have_selector('test new', :contents => 'replaced')
+      html.should_not have_selector('original')
     end
 
     it "should replace an element's outer markup" do
       template = %{<test><original>contents</original></test>}
 
       view = Effigy::View.new
-      xml = view.render(template) do
+      html = view.render(template) do
         view.replace_with 'test', '<new>replaced</new>'
       end
 
-      xml.should have_selector('new', :contents => 'replaced')
-      xml.should_not have_selector('test')
+      html.should have_selector('new', :contents => 'replaced')
+      html.should_not have_selector('test')
     end
 
     it "should render html by default" do
       template = %{<html/>}
-      xml = Effigy::View.new.render(template)
-      xml.should_not include('<?xml')
-      xml.should_not include('xmlns')
+      html = Effigy::View.new.render(template)
+      html.should_not include('<?xml')
+      html.should_not include('xmlns')
+    end
+
+    it "should keep multiple top-level elements" do
+      template = %{<p>fragment one</p><p>fragment two</p>}
+      html = Effigy::View.new.render(template)
+      html.should include('one')
+      html.should include('two')
+    end
+
+    it "should handle html fragments" do
+      template = %{<h1>hello</h1>}
+      html = Effigy::View.new.render(template)
+      html.should == template
     end
 
     %w(find f).each do |chain_method|
@@ -139,11 +152,11 @@ module Effigy
         template = %{<test><element one="abc">something</element></test>}
 
         view = Effigy::View.new
-        xml = view.render(template) do
+        html = view.render(template) do
           view.send(chain_method, 'element').text('expected')
         end
 
-        xml.should have_selector(:element, :contents => 'expected', :one => 'abc')
+        html.should have_selector(:element, :contents => 'expected', :one => 'abc')
       end
     end
 

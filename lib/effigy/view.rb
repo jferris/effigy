@@ -85,7 +85,7 @@ module Effigy
     #
     # @return [String] the resulting document
     def render(template)
-      @current_context = Nokogiri::XML.parse(template)
+      @current_context = Nokogiri::HTML.fragment(template)
       yield if block_given?
       transform
       output
@@ -136,13 +136,13 @@ module Effigy
     #
     # @param [String] selector a CSS or XPath string describing the element to
     #   transform
-    # @param [String] xml the new contents of the selected element. Markup is
+    # @param [String] html the new contents of the selected element. Markup is
     #   not escaped.
     # @example
     #   html('p', '<b>Welcome!</b>')
     #   find('p').html('<b>Welcome!</b>')
-    def html(selector, xml)
-      select(selector).inner_html = xml
+    def html(selector, html)
+      select(selector).inner_html = html
     end
 
     # Replaces the selected element with live markup.
@@ -151,10 +151,10 @@ module Effigy
     #
     # @param [String] selector a CSS or XPath string describing the element to
     #   transform
-    # @param [String] xml the new markup to replace the selected element. Markup is
+    # @param [String] html the new markup to replace the selected element. Markup is
     #   not escaped.
-    def replace_with(selector, xml)
-      select(selector).after(xml).unlink
+    def replace_with(selector, html)
+      select(selector).after(html).unlink
     end
 
     # Selects an element or elements for chained transformation.
@@ -220,10 +220,10 @@ module Effigy
     # Returns the first node that matches the given selection, or the nodes
     # themselves if given a set of nodes.
     #
-    # @param nodes [String,Nokogiri::XML::NodeSet] if a String, the selector to
+    # @param nodes [String,Nokogiri::HTML::NodeSet] if a String, the selector to
     #   use when determining the current context. When a NodeSet, the set of
     #   nodes that should be returned.
-    # @return [Nokogiri::XML::NodeSet] the nodes selected by the given selector
+    # @return [Nokogiri::HTML::NodeSet] the nodes selected by the given selector
     #   or node set.
     # @raise [ElementNotFound] if no nodes match the given selector
     def select(nodes)
@@ -238,7 +238,7 @@ module Effigy
     # Returns a set of nodes matching the given selector.
     #
     # @param selector [String] the selctor to use when finding nodes
-    # @return [Nokogiri::XML::NodeSet] the nodes selected by the given selector
+    # @return [Nokogiri::HTML::NodeSet] the nodes selected by the given selector
     # @raise [ElementNotFound] if no nodes match the given selector
     def select_all(selector)
       result = current_context.search(selector)
@@ -249,10 +249,10 @@ module Effigy
     # Clones an element, sets it as the current context, and yields to the
     # given block with the given item.
     #
-    # @param [Nokogiri::XML::Element] the element to clone
+    # @param [Nokogiri::HTML::Element] the element to clone
     # @param [Object] item the item that should be yielded to the block
     # @yield [Object] the item passed as item
-    # @return [Nokogiri::XML::Element] the clone of the original element
+    # @return [Nokogiri::HTML::Element] the clone of the original element
     def clone_element_with_item(original_element, item, &block)
       item_element = original_element.dup
       find(item_element) { yield(item) }
