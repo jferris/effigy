@@ -269,7 +269,7 @@ module Effigy
     #
     # @return [String] the transformed document as a string
     def output
-      current_context.to_xhtml
+      current_context.to_html
     end
 
   end

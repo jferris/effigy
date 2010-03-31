@@ -127,10 +127,11 @@ module Effigy
       xml.should_not have_selector('test')
     end
 
-    it "should render xhtml by default" do
+    it "should render html by default" do
       template = %{<html/>}
       xml = Effigy::View.new.render(template)
       xml.should_not include('<?xml')
+      xml.should_not include('xmlns')
     end
 
     %w(find f).each do |chain_method|
