@@ -1,5 +1,4 @@
 require 'effigy/view'
-require 'effigy/errors'
 
 # Namespace module for Effigy.
 #

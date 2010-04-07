@@ -12,17 +12,17 @@ module Effigy
       read_class_names
     end
 
-    # Appends a class name to the list.
-    # @param [String] class_name the class name to append
-    def <<(class_name)
-      @class_names << class_name
+    # Appends the given class names to the list.
+    # @param [Array] class_names the class name to append
+    def add(class_names)
+      @class_names += class_names
       write_class_names
     end
 
-    # Removes a class name from the list.
-    # @param [String] class_name the class name to remove
-    def remove(class_name)
-      @class_names.delete(class_name)
+    # Removes the given class names from the list.
+    # @param [Array] class_names the class names to remove
+    def remove(class_names)
+      @class_names -= class_names
       write_class_names
     end
 

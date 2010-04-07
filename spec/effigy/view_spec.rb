@@ -4,7 +4,10 @@ require 'effigy/view'
 module Effigy
   describe View do
     it "should replace element text" do
-      template = %{<test><element one="abc">something</element></test>}
+      template = %{<test>
+                     <element one="abc">something</element>
+                     <element two="abc">else</element>
+                   </test>}
 
       view = Effigy::View.new
       html = view.render(template) do
@@ -12,10 +15,14 @@ module Effigy
       end
 
       html.should have_selector(:element, :contents => 'expected', :one => 'abc')
+      html.should have_selector(:element, :contents => 'expected', :two => 'abc')
     end
 
     it "should replace element attributes" do
-      template = %{<test><element one="abc">something</element></test>}
+      template = %{<test>
+        <element one="abc">something</element>
+        <element two="abc">else</element>
+        </test>}
 
       view = Effigy::View.new
       html = view.render(template) do
@@ -23,6 +30,7 @@ module Effigy
       end
 
       html.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
+      html.should have_selector(:element, :contents => 'else', :one => '123', :two => '234')
     end
 
     it "should replace one attribute" do
@@ -36,8 +44,11 @@ module Effigy
       html.should have_selector(:element, :contents => 'something', :one => '123')
     end
 
-    it "should replace an element with a clone for each item in a collection" do
-      template = %{<test><element><value>original</value></element></test>}
+    it "should replace all selected elements with a clone for each item in a collection" do
+      template = %{<test>
+                     <element><value>original</value></element>
+                     <element><value>dup</value></element>
+                   </test>}
 
       view = Effigy::View.new
       html = view.render(template) do
@@ -49,6 +60,7 @@ module Effigy
       html.should have_selector('element value', :contents => 'one')
       html.should have_selector('element value', :contents => 'two')
       html.should_not have_selector('element value', :contents => 'original')
+      html.should_not have_selector('element value', :contents => 'dup')
       html.should =~ /one.*two/m
     end
 
@@ -127,17 +139,20 @@ module Effigy
       html.should_not have_selector('test')
     end
 
-    it "should append text to an element" do
-      template = %{<test>start</test>}
+    it "should append text to elements" do
+      template = %{<outer><test class="abc">start</test><other class="abc">start</other></outer>}
 
       view = Effigy::View.new
       html = view.render(template) do
-        view.append 'test', '<p>middle</p><p>end</p>'
+        view.append '.abc', '<p>middle</p><p>end</p>'
       end
 
-      html.should include("<test>start")
+      html.should include(%{<test class="abc">start})
       html.should have_selector('test p', :contents => 'middle')
       html.should have_selector('test p', :contents => 'end')
+      html.should include(%{<other class="abc">start})
+      html.should have_selector('other p', :contents => 'middle')
+      html.should have_selector('other p', :contents => 'end')
     end
 
     it "should render html by default" do
@@ -181,28 +196,24 @@ module Effigy
         end
       end
 
-      it "should raise when updating text content for .find" do
-        render { |view| view.text('.find', 'value') }.should raise_error(Effigy::ElementNotFound)
+      it "should not raise when updating text content for .find" do
+        render { |view| view.text('.find', 'value') }.should_not raise_error
       end
 
-      it "should raise when updating attributes for .find" do
-        render { |view| view.attr('.find', :attr => 'value') }.
-          should raise_error(Effigy::ElementNotFound)
+      it "should not raise when updating attributes for .find" do
+        render { |view| view.attr('.find', :attr => 'value') }.should_not raise_error
       end
 
-      it "should raise when replacing an element matching .find" do
-        render { |view| view.replace_each('.find', []) }.
-          should raise_error(Effigy::ElementNotFound)
+      it "should not raise when replacing an element matching .find" do
+        render { |view| view.replace_each('.find', []) }.should_not raise_error
       end
 
-      it "should raise when removing elements matching .find" do
-        render { |view| view.remove('.find') }.
-          should raise_error(Effigy::ElementNotFound)
+      it "should not raise when removing elements matching .find" do
+        render { |view| view.remove('.find') }.should_not raise_error
       end
 
-      it "should raise when setting the context to .find" do
-        render { |view| view.find('.find') {} }.
-          should raise_error(Effigy::ElementNotFound)
+      it "should not raise when setting the context to .find" do
+        render { |view| view.find('.find') {} }.should_not raise_error
       end
     end
   end

@@ -1,9 +1,10 @@
 require 'nokogiri'
 require 'effigy/class_list'
-require 'effigy/errors'
 require 'effigy/selection'
 require 'effigy/core_ext/hash'
 require 'effigy/core_ext/object'
+require 'effigy/nokogiri_ext'
+require 'effigy/example_element_transformer'
 
 module Effigy
   # Accepts a template to be transformed.
@@ -20,25 +21,27 @@ module Effigy
   # end
   #
   class View
-    # Replaces the text content of the selected element.
+    # Replaces the text content of the selected elements.
     #
     # Markup in the given content is escaped. Use {#html} if you want to
     # replace the contents with live markup.
     #
-    # @param [String] selector a CSS or XPath string describing the element to
+    # @param [String] selector a CSS or XPath string describing the elements to
     #   transform
-    # @param [String] content the text that should be the new element contents
+    # @param [String] content the text that should be the new contents
     # @example
     #   text('h1', 'a title')
     #   find('h1').text('a title')
     #   text('p', '<b>title</b>') # <p>&lt;b&gt;title&lt;/title&gt;</p>
     def text(selector, content)
-      select(selector).content = content
+      select(selector).each do |node|
+        node.content = content
+      end
     end
 
-    # Adds or updates the given attribute or attributes of the selected element.
+    # Adds or updates the given attribute or attributes of the selected elements.
     #
-    # @param [String] selector a CSS or XPath string describing the element to
+    # @param [String] selector a CSS or XPath string describing the elements to
     #   transform
     # @param [String,Hash] attributes_or_attribute_name if a String, replaces
     #   that attribute with the given value. If a Hash, uses the keys as
@@ -50,16 +53,17 @@ module Effigy
     #   attr('p', :id, 'an_id')
     #   find('p').attr(:id, 'an_id')
     def attr(selector, attributes_or_attribute_name, value = nil)
-      element = select(selector)
       attributes = attributes_or_attribute_name.to_effigy_attributes(value)
-      attributes.each do |attribute, value|
-        element[attribute.to_s] = value
+      select(selector).each do |element|
+        element.merge!(attributes)
       end
     end
 
-    # Replaces the selected element with a clone for each item in the collection.
+    # Replaces the selected elements with a clone for each item in the
+    # collection. If multiple elements are selected, only the first element
+    # will be used for cloning. All selected elements will be removed.
     #
-    # @param [String] selector a CSS or XPath string describing the element to
+    # @param [String] selector a CSS or XPath string describing the elements to
     #   transform
     # @param [Enumerable] collection the items that are the base for each
     #   cloned element
@@ -69,12 +73,8 @@ module Effigy
     #     text('h1', title)
     #   end
     def replace_each(selector, collection, &block)
-      original_element = select(selector)
-      collection.inject(original_element) do |sibling, item|
-        item_element = clone_element_with_item(original_element, item, &block)
-        sibling.add_next_sibling(item_element)
-      end
-      original_element.unlink
+      selected_elements = select(selector)
+      ExampleElementTransformer.new(self, selected_elements).replace_each(collection, &block)
     end
 
     # Perform transformations on the given template.
@@ -99,50 +99,53 @@ module Effigy
     #   remove('.post')
     #   find('.post').remove
     def remove(selector)
-      select_all(selector).each { |element| element.unlink }
+      select(selector).each { |element| element.unlink }
     end
 
-    # Adds the given class names to the selected element.
+    # Adds the given class names to the selected elements.
     #
-    # @param [String] selector a CSS or XPath string describing the element to
+    # @param [String] selector a CSS or XPath string describing the elements to
     #   transform
     # @param [String] class_names a CSS class name that should be added
     # @example
     #   add_class('a#home', 'selected')
     #   find('a#home').add_class('selected')
     def add_class(selector, *class_names)
-      element = select(selector)
-      class_list = ClassList.new(element)
-      class_names.each { |class_name| class_list << class_name }
+      select(selector).each do |element|
+        class_list = ClassList.new(element)
+        class_list.add class_names
+      end
     end
 
-    # Removes the given class names from the selected element.
+    # Removes the given class names from the selected elements.
     #
     # Ignores class names that are not present.
     #
-    # @param [String] selector a CSS or XPath string describing the element to
+    # @param [String] selector a CSS or XPath string describing the elements to
     #   transform
     # @param [String] class_names a CSS class name that should be removed
     # @example
     #   remove_class('a#home', 'selected')
     #   find('a#home').remove_class('selected')
     def remove_class(selector, *class_names)
-      element = select(selector)
-      class_list = ClassList.new(element)
-      class_names.each { |class_name| class_list.remove(class_name) }
+      select(selector).each do |element|
+        class_list = ClassList.new(element)
+        class_list.remove(class_names)
+      end
     end
 
-    # Replaces the contents of the selected element with live markup.
+    # Replaces the contents of the selected elements with live markup.
     #
-    # @param [String] selector a CSS or XPath string describing the element to
+    # @param [String] selector a CSS or XPath string describing the elements to
     #   transform
-    # @param [String] inner_html the new contents of the selected element. Markup is
-    #   not escaped.
+    # @param [String] inner_html the new contents of the selected elements. Markup is
     # @example
     #   html('p', '<b>Welcome!</b>')
     #   find('p').html('<b>Welcome!</b>')
     def html(selector, inner_html)
-      select(selector).inner_html = inner_html
+      select(selector).each do |node|
+        node.inner_html = inner_html
+      end
     end
 
     # Replaces the selected element with live markup.
@@ -157,17 +160,14 @@ module Effigy
       select(selector).after(html).unlink
     end
 
-    # Adds the given markup to the end of the selected element.
+    # Adds the given markup to the end of the selected elements.
     #
-    # @param [String] selector a CSS or XPath string describing the element to
+    # @param [String] selector a CSS or XPath string describing the elements to
     #   which this HTML should be appended
     # @param [String] html_to_append the new markup to append to the selected
     #   element. Markup is not escaped.
     def append(selector, html_to_append)
-      node = select(selector)
-      current_context.fragment(html_to_append).children.each do |child|
-        node << child
-      end
+      select(selector).each { |node| node.append_fragment html_to_append }
     end
 
     # Selects an element or elements for chained transformation.
@@ -230,7 +230,7 @@ module Effigy
     # during {#find} blocks.
     attr_reader :current_context
 
-    # Returns the first node that matches the given selection, or the nodes
+    # Returns a set of nodes matching the given selector, or the nodes
     # themselves if given a set of nodes.
     #
     # @param nodes [String,Nokogiri::HTML::NodeSet] if a String, the selector to
@@ -238,25 +238,12 @@ module Effigy
     #   nodes that should be returned.
     # @return [Nokogiri::HTML::NodeSet] the nodes selected by the given selector
     #   or node set.
-    # @raise [ElementNotFound] if no nodes match the given selector
     def select(nodes)
       if nodes.respond_to?(:search)
         nodes
       else
-        current_context.at(nodes) or
-          raise ElementNotFound, nodes
+        current_context.search(nodes)
       end
-    end
-
-    # Returns a set of nodes matching the given selector.
-    #
-    # @param selector [String] the selctor to use when finding nodes
-    # @return [Nokogiri::HTML::NodeSet] the nodes selected by the given selector
-    # @raise [ElementNotFound] if no nodes match the given selector
-    def select_all(selector)
-      result = current_context.search(selector)
-      raise ElementNotFound, selector if result.empty?
-      result
     end
 
     # Clones an element, sets it as the current context, and yields to the
