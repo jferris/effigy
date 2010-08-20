@@ -120,10 +120,10 @@ describe "a controller with an effigy view and template" do
     RUBY
 
     create_rails_file 'app/templates/wand/index.html', <<-HTML
-      <html><body>
+      <div>
         <h1 class="success">spell</h1>
         <p>placeholder</p>
-      </body></html>
+      </div>
     HTML
 
     create_rails_file 'app/views/wand/_spell.html.effigy', <<-RUBY
@@ -141,6 +141,6 @@ describe "a controller with an effigy view and template" do
     response = render(WandController.new)
 
     response.should be_success
-    response.body.should have_selector('html body p', :contents => 'hocus pocus')
+    response.body.should have_selector('div p', :contents => 'hocus pocus')
   end
 end

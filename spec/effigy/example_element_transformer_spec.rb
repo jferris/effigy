@@ -19,7 +19,7 @@ describe Effigy::ExampleElementTransformer do
                    <element><value>original</value></element>
                    <element><value>dup</value></element>
                  </test>}
-    xml = view.render(template)
+    xml = view.render_html_fragment(template)
 
     xml.should have_selector('element value', :contents => 'one')
     xml.should have_selector('element value', :contents => 'two')

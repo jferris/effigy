@@ -10,7 +10,7 @@ module Effigy
                    </test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.text 'element', 'expected'
       end
 
@@ -25,7 +25,7 @@ module Effigy
         </test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.attr 'element', :one => '123', :two => '234'
       end
 
@@ -37,7 +37,7 @@ module Effigy
       template = %{<test><element one="abc">something</element></test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.attr 'element', :one, '123'
       end
 
@@ -51,7 +51,7 @@ module Effigy
                    </test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.replace_each('element', %w(one two)) do |value|
           view.text('value', value)
         end
@@ -68,7 +68,7 @@ module Effigy
       template = %{<test><element><value>original</value></element></test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.find('element') do
           view.text('value', 'expected')
         end
@@ -81,7 +81,7 @@ module Effigy
       template = %{<test><first class="yes"/><other class="yes"/><last class="no"/></test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.remove('.yes')
       end
 
@@ -93,7 +93,7 @@ module Effigy
       template = %{<test class="original"/>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.add_class('test', 'one', 'two')
       end
 
@@ -106,7 +106,7 @@ module Effigy
       template = %{<test class="one two three"/>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.remove_class('test', 'one', 'two')
       end
 
@@ -119,11 +119,11 @@ module Effigy
       template = %{<test><original>contents</original></test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
-        view.html 'test', '<new>replaced</new>'
+      html = view.render_html_fragment(template) do
+        view.html 'test', '<b>replaced</b>'
       end
 
-      html.should have_selector('test new', :contents => 'replaced')
+      html.should have_selector('test b', :contents => 'replaced')
       html.should_not have_selector('original')
     end
 
@@ -131,11 +131,11 @@ module Effigy
       template = %{<test><original>contents</original></test>}
 
       view = Effigy::View.new
-      html = view.render(template) do
-        view.replace_with 'test', '<new>replaced</new>'
+      html = view.render_html_fragment(template) do
+        view.replace_with 'test', '<b>replaced</b>'
       end
 
-      html.should have_selector('new', :contents => 'replaced')
+      html.should have_selector('b', :contents => 'replaced')
       html.should_not have_selector('test')
     end
 
@@ -143,7 +143,7 @@ module Effigy
       template = %{<outer><test class="abc">start</test><other class="abc">start</other></outer>}
 
       view = Effigy::View.new
-      html = view.render(template) do
+      html = view.render_html_fragment(template) do
         view.append '.abc', '<p>middle</p><p>end</p>'
       end
 
@@ -155,23 +155,24 @@ module Effigy
       html.should have_selector('other p', :contents => 'end')
     end
 
-    it "should render html by default" do
+    it "should render an html document" do
       template = %{<html/>}
-      html = Effigy::View.new.render(template)
+      html = Effigy::View.new.render_html_document(template)
       html.should_not include('<?xml')
       html.should_not include('xmlns')
+      html.should have_selector('html')
     end
 
     it "should keep multiple top-level elements" do
       template = %{<p>fragment one</p><p>fragment two</p>}
-      html = Effigy::View.new.render(template)
+      html = Effigy::View.new.render_html_fragment(template)
       html.should include('one')
       html.should include('two')
     end
 
     it "should handle html fragments" do
       template = %{<h1>hello</h1>}
-      html = Effigy::View.new.render(template)
+      html = Effigy::View.new.render_html_fragment(template)
       html.should == template
     end
 
@@ -180,7 +181,7 @@ module Effigy
         template = %{<test><element one="abc">something</element></test>}
 
         view = Effigy::View.new
-        html = view.render(template) do
+        html = view.render_html_fragment(template) do
           view.send(chain_method, 'element').text('expected')
         end
 
@@ -192,7 +193,7 @@ module Effigy
       def render(&block)
         lambda do
           view = Effigy::View.new
-          view.render('<test/>') { block.call(view) }
+          view.render_html_fragment('<test/>') { block.call(view) }
         end
       end
 
@@ -235,7 +236,7 @@ module Effigy
     it "should run #transform when rendering" do
       template = %{<test><element>original</element></test>}
       view = @subclass.new('expected')
-      view.render(template).should have_selector('element', :contents => 'expected')
+      view.render_html_fragment(template).should have_selector('element', :contents => 'expected')
     end
   end
 end

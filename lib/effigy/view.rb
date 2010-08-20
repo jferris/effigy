@@ -10,13 +10,15 @@ module Effigy
   # Accepts a template to be transformed.
   #
   # For most common cases, creating a subclass makes the most sense, but this
-  # class can be used directly by passing a block to {#render}.
+  # class can be used directly by passing a block to {#render_html_document} or
+  # {#render_html_fragment}.
   #
   # @see #transform
-  # @see #render
+  # @see #render_html_document
+  # @see #render_html_fragment
   # @example
   # view = Effigy::View.new
-  # view.render(template) do
+  # view.render_html_document(template) do
   #   view.find('h1').text('the title')
   # end
   #
@@ -77,18 +79,26 @@ module Effigy
       ExampleElementTransformer.new(self, selected_elements).replace_each(collection, &block)
     end
 
-    # Perform transformations on the given template.
+    # Perform transformations on a string containing an html fragment.
     #
     # @yield inside the given block, transformation methods such as #text and
     #   #html can be used on the template. Using a subclass, you can instead
     #   override the #transform method, which is the preferred approach.
     #
-    # @return [String] the resulting document
-    def render(template)
-      @current_context = Nokogiri::HTML.fragment(template)
-      yield if block_given?
-      transform
-      output
+    # @return [String] the transformed fragment
+    def render_html_fragment(template, &block)
+      yield_transform_and_output(Nokogiri::HTML.fragment(template), &block)
+    end
+
+    # Perform transformations on a string containing an html document.
+    #
+    # @yield inside the given block, transformation methods such as #text and
+    #   #html can be used on the template. Using a subclass, you can instead
+    #   override the #transform method, which is the preferred approach.
+    #
+    # @return [String] the transformed document
+    def render_html_document(template, &block)
+      yield_transform_and_output(Nokogiri::HTML.parse(template), &block)
     end
 
     # Removes the selected elements from the template.
@@ -201,10 +211,9 @@ module Effigy
     end
     alias_method :f, :find
 
-    # Called by {#render} to perform transformations on the source template.
-    #
-    # Override this method in subclasses to perform the transformations
-    # specific to your view.
+    # Called by render methods to perform transformations on the source
+    # template. Override this method in subclasses to perform the
+    # transformations specific to your view.
     #
     # @example
     #   class PostView < Effigy::View
@@ -261,8 +270,8 @@ module Effigy
 
     # Converts the transformed document to a string.
     #
-    # Called by {#render} after transforming the document using a passed block
-    # and {#transform}.
+    # Called by render methods after transforming the document using a passed
+    # block and {#transform}.
     #
     # Override this in subclasses if you wish to return something besides an
     # XHTML string representation of the transformed document.
@@ -272,5 +281,16 @@ module Effigy
       current_context.to_html
     end
 
+    # Uses the given document or fragment as a basis for transformation.
+    #
+    # @yield self, with the document or fragment set as the context.
+    #
+    # @return [String] the transformed document or fragment as a string
+    def yield_transform_and_output(document_or_fragment)
+      @current_context = document_or_fragment
+      yield if block_given?
+      transform
+      output
+    end
   end
 end

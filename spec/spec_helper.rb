@@ -1,3 +1,4 @@
+gem 'nokogiri', '1.4.2'
 require 'spec'
 require 'spec/autorun'
 

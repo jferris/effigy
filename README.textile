@@ -4,7 +4,7 @@ Create usable views in Ruby with HTML and CSS selectors.
 
 h2. Synopsis
 
-In Effigy, your view is a Ruby class that performs transformation on an HTML template. The template is passed to #render, which calls a private #transform method to apply the transformations. The transformed template is then returned as a string of HTML.
+In Effigy, your view is a Ruby class that performs transformation on an HTML template. The template is passed to a render method, which calls a private #transform method to apply the transformations. The transformed template is then returned as a string of HTML.
 
 <pre>
 template = %{
@@ -46,7 +46,7 @@ class PostView < Effigy::View
 end
 
 view = PostView.new(post)
-document = view.render(template)
+document = view.render_html_document(template)
 
 # Result document:
 # <html>

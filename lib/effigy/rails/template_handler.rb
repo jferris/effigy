@@ -34,7 +34,7 @@ module Effigy
             end
           end
           view = #{view_class_name}.new(self, assigns) { |*names| yield(*names) }
-          view.render(#{template_source.inspect})
+          view.#{render_method}(#{template_source.inspect})
         RUBY
       end
 
@@ -88,6 +88,17 @@ module Effigy
       # @return [Boolean] true-ish if this view is a layout, false-ish otherwise
       def layout?
         base_path =~ /^layouts/
+      end
+
+      # @return [String] the method that should be used to render the document.
+      # The template will be parsed as a full html document for a layout, and a
+      # fragment for anything else.
+      def render_method
+        if layout?
+          'render_html_document'
+        else
+          'render_html_fragment'
+        end
       end
 
       # @return [Boolean] true-ish if this view is a partial, false-ish otherwise
