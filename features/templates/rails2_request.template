@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+require File.expand_path('../../config/environment',  __FILE__)
+
+request = Rack::MockRequest.new(ActionController::Dispatcher.new)
+response = request.get(ARGV[0])
+puts response.body
+

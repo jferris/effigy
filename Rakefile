@@ -1,9 +1,10 @@
 require 'rubygems'
 require 'rake'
 require 'rake/gempackagetask'
+require 'cucumber/rake/task'
 
-desc 'Default: run the specs and metrics.'
-task :default => [:spec, :metrics]
+desc 'Default: run the specs, features, and metrics.'
+task :default => [:spec, :cucumber, :metrics]
 
 task :rails_root do
   rails_root = File.join('tmp', 'rails_root')
@@ -88,4 +89,9 @@ eval("$specification = begin; #{IO.read('effigy.gemspec')}; end")
 Rake::GemPackageTask.new($specification) do |package|
   package.need_zip = true
   package.need_tar = true
+end
+
+Cucumber::Rake::Task.new(:cucumber) do |t|
+  t.fork = true
+  t.cucumber_opts = ['--format', (ENV['CUCUMBER_FORMAT'] || 'progress')]
 end
