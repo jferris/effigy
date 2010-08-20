@@ -41,3 +41,8 @@ When /^I request "([^"]*)"$/ do |path|
   @terminal.run("ruby script/request #{path}")
 end
 
+Then /^the following should be saved as "([^"]*)"$/ do |path, string|
+  contents = IO.read(File.join(RAILS_ROOT, path))
+  contents.strip.should == string.strip
+end
+
