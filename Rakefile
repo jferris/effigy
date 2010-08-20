@@ -52,33 +52,6 @@ task :clean do
   end
 end
 
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name        = %q{effigy}
-    gem.summary     = %q{Effigy provides a view and template framework without a templating language.}
-    gem.description = %q{Define views in Ruby and templates in HTML. Avoid code interpolation or ugly templating languages. Use ids, class names, and semantic structures already present in your documents to produce content.}
-
-    gem.files        = FileList['[A-Z]*',
-                                'lib/**/*.rb',
-                                'spec/**/*.rb',
-                                'rails/**/*.rb',
-                                'generators/**/*.*']
-    gem.require_path = 'lib'
-    gem.test_files   = Dir[*['spec/**/*_spec.rb']]
-
-    gem.authors = ["Joe Ferris"]
-    gem.email   = %q{jferris@thoughtbot.com}
-
-    gem.platform = Gem::Platform::RUBY
-
-    gem.add_runtime_dependency 'nokogiri'
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Missing dependencies for jeweler"
-end
-
 namespace :metrics do
   desc "Run reek"
   begin
@@ -109,4 +82,10 @@ rescue LoadError => exception
   task :yard do
     raise exception
   end
+end
+
+eval("$specification = begin; #{IO.read('effigy.gemspec')}; end")
+Rake::GemPackageTask.new($specification) do |package|
+  package.need_zip = true
+  package.need_tar = true
 end
