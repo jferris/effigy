@@ -41,7 +41,7 @@ class PostView < Effigy::View
       text('p', comment.summary)
       attr('a', :href => url_for(comment))
     end
-    remove('#no-comments') if post.comments.empty?
+    remove('#no-comments') if post.comments.any?
   end
 end
 
@@ -93,7 +93,7 @@ class PostView < Effigy::View
       find('p').text(comment.summary)
       find('a').attr(:href => url_for(comment))
     end
-    find('#no-comments').remove if post.comments.empty?
+    find('#no-comments').remove if post.comments.any?
   end
 end
 </pre>
