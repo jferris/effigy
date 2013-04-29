@@ -1,19 +1,16 @@
-Feature: Integrate with Rails 2.3
+Feature: Integrate with Rails templates
 
   Background:
-    When I generate a new rails 2 application
-    And I configure the rails 2 preinitializer to use bundler
-    And I save the following as "Gemfile"
-      """
-      source "http://rubygems.org"
-      gem 'rails', '2.3.8'
-      gem 'sqlite3-ruby', :require => 'sqlite3'
-      gem 'effigy', :path => '../../', :require => 'effigy/rails'
-      """
-    When I run "bundle lock"
+    When I run `rails new testapp`
+    And I cd to "testapp"
+    And I configure my routes to allow global access
+    And I add "effigy" from this project as a dependency
+    And I add "thin" from rubygems as a dependency
+    When I run `bundle install`
 
-  Scenario: render a template a reference assigns
-    When I save the following as "app/controllers/magic_controller.rb"
+  @disable-bundler
+  Scenario: render a template and reference assigns
+    When I write to "app/controllers/magic_controller.rb" with:
       """
       class MagicController < ApplicationController
         def index
@@ -22,7 +19,7 @@ Feature: Integrate with Rails 2.3
         end
       end
       """
-    When I save the following as "app/views/magic/index.html.effigy"
+    When I write to "app/views/magic/index.html.effigy" with:
       """
       class MagicIndexView < Effigy::Rails::View
         def transform
@@ -30,57 +27,61 @@ Feature: Integrate with Rails 2.3
         end
       end
       """
-    When I save the following as "app/templates/magic/index.html"
+    When I write to "app/templates/magic/index.html" with:
       """
       <h1 class="success">placeholder title</h1>
       """
-    When I request "/magic/index"
-    Then I should see:
+    When I start the application
+    And I GET /magic/index
+    Then the response should contain:
       """
       <h1 class="success">hocus pocus</h1>
       """
 
+  @disable-bundler
   Scenario: render a template within a layout
-    When I save the following as "app/controllers/magic_controller.rb"
+    When I write to "app/controllers/magic_controller.rb" with:
       """
       class MagicController < ApplicationController
-        layout 'application'
+        layout 'example'
       end
       """
-    When I save the following as "app/views/magic/index.html.effigy"
+    When I write to "app/views/magic/index.html.effigy" with:
       """
       class MagicIndexView < Effigy::Rails::View
       end
       """
-    When I save the following as "app/templates/magic/index.html"
+    When I write to "app/templates/magic/index.html" with:
       """
       <h1 class="success">title</h1>
       """
-    When I save the following as "app/views/layouts/application.html.effigy"
+    When I write to "app/views/layouts/example.html.effigy" with:
       """
-      class ApplicationLayout < Effigy::Rails::View
+      class ExampleLayout < Effigy::Rails::View
         def transform
           html('body', content_for(:layout))
         end
       end
       """
-    When I save the following as "app/templates/layouts/application.html"
+    When I write to "app/templates/layouts/example.html" with:
       """
       <html><body></body></html>
       """
-    When I request "/magic/index"
-    Then I should see:
+    When I start the application
+    And I GET /magic/index
+    Then the response should contain:
       """
       <html><body><h1 class="success">title</h1></body></html>
       """
 
+  @disable-bundler
   Scenario: render a partial
-    When I save the following as "app/controllers/wand_controller.rb"
+    When I write to "app/controllers/wand_controller.rb" with:
       """
       class WandController < ApplicationController
       end
       """
-    When I save the following as "app/views/wand/index.html.effigy"
+    When I write to "app/views/wand/index.html.effigy" with:
       """
       class WandIndexView < Effigy::Rails::View
         def transform
@@ -88,14 +89,14 @@ Feature: Integrate with Rails 2.3
         end
       end
       """
-    When I save the following as "app/templates/wand/index.html"
+    When I write to "app/templates/wand/index.html" with:
       """
       <div>
         <h1 class="success">spell</h1>
         <p>placeholder</p>
       </div>
       """
-    When I save the following as "app/views/wand/_spell.html.effigy"
+    When I write to "app/views/wand/_spell.html.effigy" with:
       """
       class WandSpellPartial < Effigy::Rails::View
         def transform
@@ -103,12 +104,13 @@ Feature: Integrate with Rails 2.3
         end
       end
       """
-    When I save the following as "app/templates/wand/_spell.html"
+    When I write to "app/templates/wand/_spell.html" with:
       """
       <p>put a spell on me</p>
       """
-    When I request "/wand/index"
-    Then I should see:
+    When I start the application
+    And I GET /wand/index
+    Then the response should contain:
       """
       <div>
         <h1 class="success">spell</h1>

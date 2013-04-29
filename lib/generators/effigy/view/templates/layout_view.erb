@@ -1,4 +1,4 @@
-class <%= view_class_name %> < Effigy::Rails::View
+class <%= @view_class_name %> < Effigy::Rails::View
   private
   def transform
     # Apply transformations to the template file here:
@@ -6,7 +6,7 @@ class <%= view_class_name %> < Effigy::Rails::View
     # Assigns from the action are available:
     # text('h1', @post.title)
     # Transformations will be applied to to the template file:
-    # <%= template_path %>
+    # <%= @template_path %>
     # See the documentation for more information.
     html('body', content_for(:layout))
   end

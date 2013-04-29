@@ -21,7 +21,6 @@ module Effigy
       # @param [Hash] assigns a hash of instance variables to be copied. Names
       #   should include the "@" prefix.
       def initialize(action_view, assigns, &layout_block)
-
         @action_view = action_view
         assigns.each do |name, value|
           instance_variable_set(name, value)

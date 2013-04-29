@@ -1,20 +1,15 @@
-Feature: Generate views in a Rails 2.3 application
+Feature: Generate views in a Rails application
 
   Background:
-    When I generate a new rails 2 application
-    And I configure the rails 2 preinitializer to use bundler
-    And I save the following as "Gemfile"
-      """
-      source "http://rubygems.org"
-      gem 'rails', '2.3.8'
-      gem 'sqlite3-ruby', :require => 'sqlite3'
-      gem 'effigy', :path => '../../', :require => 'effigy/rails'
-      """
-    When I run "bundle lock"
+    When I run `rails new testapp`
+    And I cd to "testapp"
+    And I add "effigy" from this project as a dependency
+    When I run `bundle install`
 
+  @disable-bundler
   Scenario: generate a controller view and template
-    When I run "./script/generate effigy_view users create"
-    Then the following should be saved as "app/views/users/create.html.effigy"
+    When I run `bundle exec rails generate effigy:view users create`
+    Then the file "app/views/users/create.html.effigy" should contain:
       """
       class UsersCreateView < Effigy::Rails::View
         private
@@ -29,16 +24,17 @@ Feature: Generate views in a Rails 2.3 application
         end
       end
       """
-    Then the following should be saved as "app/templates/users/create.html"
+      Then the file "app/templates/users/create.html" should contain:
       """
       <h1>UsersCreateView</h1>
       <p>Edit me at app/templates/users/create.html</p>
       <p>Edit my view at app/views/users/create.html.effigy</p>
       """
 
+  @disable-bundler
   Scenario: generate a layout view and template
-    When I run "./script/generate effigy_view layouts narrow"
-    Then the following should be saved as "app/views/layouts/narrow.html.effigy"
+    When I run `bundle exec rails generate effigy:view layouts narrow`
+    Then the file "app/views/layouts/narrow.html.effigy" should contain:
       """
       class NarrowLayout < Effigy::Rails::View
         private
@@ -54,7 +50,7 @@ Feature: Generate views in a Rails 2.3 application
         end
       end
       """
-    Then the following should be saved as "app/templates/layouts/narrow.html"
+    Then the file "app/templates/layouts/narrow.html" should contain:
       """
       <html>
         <body>
