@@ -1,10 +1,9 @@
 Feature: Generate views in a Rails application
 
   Background:
-    When I run `rails new testapp`
-    And I cd to "testapp"
+    When I generate a new rails app
     And I add "effigy" from this project as a dependency
-    When I run `bundle install`
+    When I run `bundle install --local`
 
   @disable-bundler
   Scenario: generate a controller view and template

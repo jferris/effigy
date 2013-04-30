@@ -1,12 +1,11 @@
 Feature: Integrate with Rails templates
 
   Background:
-    When I run `rails new testapp`
-    And I cd to "testapp"
+    When I generate a new rails app
     And I configure my routes to allow global access
     And I add "effigy" from this project as a dependency
     And I add "thin" from rubygems as a dependency
-    When I run `bundle install`
+    When I run `bundle install --local`
 
   @disable-bundler
   Scenario: render a template and reference assigns

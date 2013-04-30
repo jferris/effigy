@@ -1,3 +1,13 @@
+When /^I generate a new rails app$/ do
+  run_simple 'rails new testapp ' \
+    '--skip-git ' \
+    '--skip-bundle ' \
+    '--skip-sprockets ' \
+    '--skip-test-unit ' \
+    '--skip-javascript'
+  cd 'testapp'
+end
+
 When /^I add "([^"]*)" from this project as a dependency$/ do |gem_name|
   append_to_file('Gemfile', %{\ngem "#{gem_name}", :path => "#{PROJECT_ROOT}"})
 end
