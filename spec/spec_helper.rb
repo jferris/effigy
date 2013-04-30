@@ -1,4 +1,6 @@
 require 'rspec'
+require 'rails/all'
+require 'ammeter/init'
 
 PROJECT_ROOT = File.expand_path(File.join(File.dirname(__FILE__), '..')).freeze
 RAILS_ROOT = File.join(PROJECT_ROOT, 'tmp', 'rails_root')

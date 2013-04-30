@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'nokogiri', '>= 1.3'
 
+  s.add_development_dependency 'ammeter'
   s.add_development_dependency 'aruba'
   s.add_development_dependency 'cucumber'
   s.add_development_dependency 'rails', '>= 3.2'
