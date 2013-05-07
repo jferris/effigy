@@ -10,7 +10,7 @@ describe Effigy::ExampleElementTransformer do
         elements = select('element')
         transformer = Effigy::ExampleElementTransformer.new(self, elements)
         transformer.replace_each(%w(one two)) do |value|
-          text('value', value)
+          find('value').text(value)
         end
       end
     end

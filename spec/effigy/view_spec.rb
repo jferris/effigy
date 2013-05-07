@@ -11,7 +11,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.text 'element', 'expected'
+        view.find('element').text('expected')
       end
 
       html.should have_selector(:element, :contents => 'expected', :one => 'abc')
@@ -26,7 +26,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.attr 'element', :one => '123', :two => '234'
+        view.find('element').attr(:one => '123', :two => '234')
       end
 
       html.should have_selector(:element, :contents => 'something', :one => '123', :two => '234')
@@ -38,7 +38,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.attr 'element', :one, '123'
+        view.find('element').attr(:one, '123')
       end
 
       html.should have_selector(:element, :contents => 'something', :one => '123')
@@ -52,8 +52,10 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.replace_each('element', %w(one two)) do |value|
-          view.text('value', value)
+        view.find('element').tap do |v|
+          v.replace_each(%w(one two)) do |value|
+            v.find('value').text(value)
+          end
         end
       end
 
@@ -70,7 +72,7 @@ module Effigy
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
         view.find('element') do
-          view.text('value', 'expected')
+          view.find('value').text('expected')
         end
       end
 
@@ -82,7 +84,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.remove('.yes')
+        view.find('.yes').remove
       end
 
       html.should have_selector('.no')
@@ -94,7 +96,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.add_class('test', 'one', 'two')
+        view.find('test').add_class('one', 'two')
       end
 
       html.should have_selector('test.original')
@@ -107,7 +109,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.remove_class('test', 'one', 'two')
+        view.find('test').remove_class('one', 'two')
       end
 
       html.should have_selector('test.three')
@@ -120,7 +122,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.html 'test', '<b>replaced</b>'
+        view.find('test').html('<b>replaced</b>')
       end
 
       html.should have_selector('test b', :contents => 'replaced')
@@ -132,7 +134,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.replace_with 'test', '<b>replaced</b>'
+        view.find('test').replace_with('<b>replaced</b>')
       end
 
       html.should have_selector('b', :contents => 'replaced')
@@ -144,7 +146,7 @@ module Effigy
 
       view = Effigy::View.new
       html = view.render_html_fragment(template) do
-        view.append '.abc', '<p>middle</p><p>end</p>'
+        view.find('.abc').append('<p>middle</p><p>end</p>')
       end
 
       html.should include(%{<test class="abc">start})
@@ -198,19 +200,19 @@ module Effigy
       end
 
       it "should not raise when updating text content for .find" do
-        render { |view| view.text('.find', 'value') }.should_not raise_error
+        render { |view| view.find('.find').text('value') }.should_not raise_error
       end
 
       it "should not raise when updating attributes for .find" do
-        render { |view| view.attr('.find', :attr => 'value') }.should_not raise_error
+        render { |view| view.find('.find').attr(:attr => 'value') }.should_not raise_error
       end
 
       it "should not raise when replacing an element matching .find" do
-        render { |view| view.replace_each('.find', []) }.should_not raise_error
+        render { |view| view.find('.find').replace_each([]) }.should_not raise_error
       end
 
       it "should not raise when removing elements matching .find" do
-        render { |view| view.remove('.find') }.should_not raise_error
+        render { |view| view.find('.find').remove }.should_not raise_error
       end
 
       it "should not raise when setting the context to .find" do
@@ -228,7 +230,7 @@ module Effigy
         end
 
         def transform
-          text('element', @value)
+          find('element').text(@value)
         end
       end
     end

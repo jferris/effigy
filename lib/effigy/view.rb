@@ -1,6 +1,5 @@
 require 'nokogiri'
 require 'effigy/class_list'
-require 'effigy/selection'
 require 'effigy/core_ext/hash'
 require 'effigy/core_ext/object'
 require 'effigy/nokogiri_ext'
@@ -35,8 +34,8 @@ module Effigy
     #   text('h1', 'a title')
     #   find('h1').text('a title')
     #   text('p', '<b>title</b>') # <p>&lt;b&gt;title&lt;/title&gt;</p>
-    def text(selector, content)
-      select(selector).each do |node|
+    def text(content)
+      current_context.each do |node|
         node.content = content
       end
     end
@@ -54,9 +53,9 @@ module Effigy
     #   attr('p', :id => 'an_id', :style => 'display: none')
     #   attr('p', :id, 'an_id')
     #   find('p').attr(:id, 'an_id')
-    def attr(selector, attributes_or_attribute_name, value = nil)
+    def attr(attributes_or_attribute_name, value = nil)
       attributes = attributes_or_attribute_name.to_effigy_attributes(value)
-      select(selector).each do |element|
+      current_context.each do |element|
         element.merge!(attributes)
       end
     end
@@ -74,9 +73,8 @@ module Effigy
     #   find('.post').replace_each(titles) do |title|
     #     text('h1', title)
     #   end
-    def replace_each(selector, collection, &block)
-      selected_elements = select(selector)
-      ExampleElementTransformer.new(self, selected_elements).replace_each(collection, &block)
+    def replace_each(collection, &block)
+      ExampleElementTransformer.new(self, current_context).replace_each(collection, &block)
     end
 
     # Perform transformations on a string containing an html fragment.
@@ -108,8 +106,8 @@ module Effigy
     # @example
     #   remove('.post')
     #   find('.post').remove
-    def remove(selector)
-      select(selector).each { |element| element.unlink }
+    def remove
+      current_context.each { |element| element.unlink }
     end
 
     # Adds the given class names to the selected elements.
@@ -120,8 +118,8 @@ module Effigy
     # @example
     #   add_class('a#home', 'selected')
     #   find('a#home').add_class('selected')
-    def add_class(selector, *class_names)
-      select(selector).each do |element|
+    def add_class(*class_names)
+      current_context.each do |element|
         class_list = ClassList.new(element)
         class_list.add class_names
       end
@@ -137,8 +135,8 @@ module Effigy
     # @example
     #   remove_class('a#home', 'selected')
     #   find('a#home').remove_class('selected')
-    def remove_class(selector, *class_names)
-      select(selector).each do |element|
+    def remove_class(*class_names)
+      current_context.each do |element|
         class_list = ClassList.new(element)
         class_list.remove(class_names)
       end
@@ -152,8 +150,8 @@ module Effigy
     # @example
     #   html('p', '<b>Welcome!</b>')
     #   find('p').html('<b>Welcome!</b>')
-    def html(selector, inner_html)
-      select(selector).each do |node|
+    def html(inner_html)
+      current_context.each do |node|
         node.inner_html = inner_html
       end
     end
@@ -166,8 +164,8 @@ module Effigy
     #   transform
     # @param [String] html the new markup to replace the selected element. Markup is
     #   not escaped.
-    def replace_with(selector, html)
-      select(selector).after(html).unlink
+    def replace_with(html)
+      current_context.after(html).unlink
     end
 
     # Adds the given markup to the end of the selected elements.
@@ -176,23 +174,17 @@ module Effigy
     #   which this HTML should be appended
     # @param [String] html_to_append the new markup to append to the selected
     #   element. Markup is not escaped.
-    def append(selector, html_to_append)
-      select(selector).each { |node| node.append_fragment html_to_append }
+    def append(html_to_append)
+      current_context.each { |node| node.append_fragment html_to_append }
     end
 
     # Selects an element or elements for chained transformation.
     #
     # If given a block, the selection will be in effect during the block.
     #
-    # If not given a block, a {Selection} will be returned on which
-    # transformation methods can be called. Any methods called on the
-    # Selection will be delegated back to the view with the selector inserted
-    # into the parameter list.
-    #
     # @param [String] selector a CSS or XPath string describing the element to
     #   transform
-    # @return [Selection] a proxy object on which transformation methods can be
-    #   called
+    # @return [self]
     # @example
     #   find('.post') do
     #     text('h1', post.title)
@@ -206,7 +198,7 @@ module Effigy
         yield
         @current_context = old_context
       else
-        Selection.new(self, selector)
+        dup.with_selector(selector)
       end
     end
     alias_method :f, :find
@@ -231,13 +223,20 @@ module Effigy
     def transform
     end
 
+    protected
+
+    def with_selector(selector)
+      self.current_context = select(selector)
+      self
+    end
+
     private
 
     # The current set of nodes on which transformations are performed.
     #
     # This is usually the entire document, but will be a subset of child nodes
     # during {#find} blocks.
-    attr_reader :current_context
+    attr_accessor :current_context
 
     # Returns a set of nodes matching the given selector, or the nodes
     # themselves if given a set of nodes.
